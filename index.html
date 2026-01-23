@@ -67,7 +67,7 @@
         <button class="btn-pv" onclick="submitToFirebase()">INLEVEREN BIJ DOSSIER</button>
 
         <div id="feed-container" style="flex:1; overflow-y:auto; margin-top:10px;">
-            </div>
+        </div>
 
         <button onclick="clearAll()" style="font-size: 0.6em; background: #333; margin-top:10px;">WIS DOSSIER DATA</button>
     </div>
@@ -84,16 +84,54 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // --- SAMANTHA LOGICA ---
+    // --- SAMANTHA LOGICA V2.0 ---
     const responses = {
-        wie: "Samantha van de Berg. 25-11-1995. Amsterdam. Moet ik het spellen?",
-        auto: "Een matgrijze Golf. 42-SBF-9. Die bak staat constant in m'n nek te hijgen.",
-        waar: "Larixlaan 34, Utrecht. Hij hangt daar urenlang bij die kapotte lantaarnpaal.",
-        marco: "Marco L. Een psycho. Sinds ik het uit heb gezet, spoort hij niet meer.",
-        park: "Het Julianapark... bij die zwarte vijver. Hij stond daar te gluren bij dat bankje.",
-        eis: "6 maanden straatverbod. En hij moet weg bij m'n werk. NU.",
-        contact: "Appjes, Insta, Tikkies van 1 cent... hij probeert alles te slopen.",
-        bonus: "Eindelijk iemand die het snapt! Het is pure STALKING. Hij heeft laatst m'n banden lek gestoken!"
+        wie: [
+            "Samantha van de Berg. 25-11-1995. Amsterdam. Moet ik het spellen?",
+            "Ik heet Samantha. En nee, ik ga niet lachen voor de foto.",
+            "Samantha v.d. Berg. Ben je m'n ID nu alweer kwijt?"
+        ],
+        auto: [
+            "Een matgrijze Golf. 42-SBF-9. Die bak staat constant in m'n nek te hijgen.",
+            "Kenteken 42-SBF-9. Een grijze Golf. Hij rijdt er de hele tijd achteraan!",
+            "Die Golf van hem... 42-SBF-9. Ik word gek van dat ding in m'n spiegel."
+        ],
+        waar: [
+            "Larixlaan 34, Utrecht. Hij hangt daar urenlang bij die kapotte lantaarnpaal.",
+            "Bij m'n huis op de Larixlaan 34. Moet ik een plattegrond voor je tekenen?",
+            "Larixlaan in Utrecht. Hij staat daar gewoon te wachten tot ik naar buiten kom."
+        ],
+        marco: [
+            "Marco L. Een psycho. Sinds ik het uit heb gezet, spoort hij niet meer.",
+            "Die vent heet Marco L. Hij snapt het woord 'NEE' blijkbaar niet.",
+            "Marco. Mijn ex. Of nou ja, mijn stalker nu dus."
+        ],
+        park: [
+            "Het Julianapark... bij die zwarte vijver. Hij stond daar te gluren bij dat bankje.",
+            "In het Julianapark. Hij zat daar achter een boom. Zo eng.",
+            "Bij de vijver in het Julianapark. Hij was me aan het volgen."
+        ],
+        eis: [
+            "6 maanden straatverbod. En hij moet weg bij m'n werk. NU.",
+            "Dat hij uit m'n buurt blijft. Voorgoed.",
+            "Een straatverbod. Is dat nou zo moeilijk te regelen?"
+        ],
+        contact: [
+            "Appjes, Insta, Tikkies van 1 cent... hij probeert alles te slopen.",
+            "Hij blijft maar bellen. En die zieke Tikkies... 1 cent met teksten als 'ik zie je'.",
+            "Social media, telefoon, alles. Hij laat me geen seconde met rust."
+        ],
+        bonus: [
+            "Eindelijk iemand die het snapt! Het is pure STALKING. Hij heeft laatst m'n banden lek gestoken!",
+            "STALKING ja! Hij stond gisteravond gewoon in de tuin!",
+            "Het is een zieke obsessie. Hij heeft m'n banden al doorgesneden!"
+        ],
+        onzin: [
+            "Wat is dat voor een vraag? Wees eens concreet.",
+            "Zucht... heb je dit op de politieschool geleerd? Stel een normale vraag.",
+            "Ik zit hier niet voor m'n plezier hoor. Schiet eens op.",
+            "Hebben we de hele dag? Vraag gewoon wat je wil weten."
+        ]
     };
 
     function chatWithBot() {
@@ -105,20 +143,24 @@
         input.value = '';
 
         setTimeout(() => {
-            let reply = "Wat is dat voor een vraag? Wees eens concreet.";
+            let reply;
+            const getRnd = (arr) => arr[Math.floor(Math.random() * arr.length)];
             
             if (val.includes("alles") || val.includes("verklaring") || val.includes("schrijf")) {
                 reply = "ECHT NIET! Ik ga niet je werk doen! Stel gewoon vragen of ik ben weg!";
                 triggerShake();
-            } else if (val.includes("belaging") || val.includes("stalking")) {
-                reply = responses.bonus;
-            } else if(val.includes("wie") || val.includes("naam")) reply = responses.wie;
-            else if(val.includes("auto") || val.includes("kenteken")) reply = responses.auto;
-            else if(val.includes("waar") || val.includes("adres")) reply = responses.waar;
-            else if(val.includes("marco")) reply = responses.marco;
-            else if(val.includes("park")) reply = responses.park;
-            else if(val.includes("eis")) reply = responses.eis;
-            else if(val.includes("contact")) reply = responses.contact;
+            } 
+            else if (val.includes("belaging") || val.includes("stalking") || val.includes("lek")) reply = getRnd(responses.bonus);
+            else if (val.includes("wie") || val.includes("naam") || val.includes("heet")) reply = getRnd(responses.wie);
+            else if (val.includes("auto") || val.includes("kenteken") || val.includes("golf")) reply = getRnd(responses.auto);
+            else if (val.includes("waar") || val.includes("adres") || val.includes("woon") || val.includes("larixlaan")) reply = getRnd(responses.waar);
+            else if (val.includes("marco") || val.includes("wie is hij") || val.includes("ex")) reply = getRnd(responses.marco);
+            else if (val.includes("park") || val.includes("vijver") || val.includes("juliana")) reply = getRnd(responses.park);
+            else if (val.includes("eis") || val.includes("straf") || val.includes("verbod")) reply = getRnd(responses.eis);
+            else if (val.includes("contact") || val.includes("bericht") || val.includes("tikkie")) reply = getRnd(responses.contact);
+            else {
+                reply = getRnd(responses.onzin);
+            }
 
             addBubble(reply, 'bot');
         }, 600);
