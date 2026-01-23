@@ -27,7 +27,6 @@
         
         button { padding: 10px 20px; background: #aa0000; border: none; color: white; cursor: pointer; font-weight: bold; text-transform: uppercase; }
         button:hover { background: #ff0000; }
-        button:disabled { background: #444; color: #888; cursor: not-allowed; }
 
         .feed-item { background: #222; border: 1px solid #333; padding: 15px; margin-top: 20px; border-radius: 4px; }
         .pv-text { color: #fff; white-space: pre-wrap; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 10px; font-size: 0.9em; }
@@ -46,17 +45,132 @@
             <div class="msg bot">Kan ik aangifte doen? Maar schiet op, heb wel wat beters te doen. Stel maar een vraag als je wat wil weten.</div>
         </div>
         <div id="input-area">
-            <input type="text" id="userInput" placeholder="Typ je vraag..." onkeypress="handleKeyPress(event)">
-            <button onclick="sendMessage()">STUUR</button>
+            <input type="text" id="userInput" placeholder="Typ je vraag...">
+            <button id="sendBtn">STUUR</button>
         </div>
     </div>
 
     <div id="dossier-container">
         <h2>PV Dossier</h2>
         <textarea id="pvInput" placeholder="Werk hier de officiële verklaring uit..."></textarea>
-        <button onclick="sendToFirebase()">INLEVEREN BIJ DOSSIER</button>
+        <button id="saveBtn">INLEVEREN BIJ DOSSIER</button>
 
         <div id="feed-container"></div>
 
         <div style="margin-top: auto; padding-top: 20px; text-align: center;">
-            <button onclick="clearDatabase()" style="font-size: 0.7em; background: #333;">WIS DOSSIER DATA</
+            <button id="clearBtn" style="font-size: 0.7em; background: #333;">WIS DOSSIER DATA</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 1. Firebase Configuratie (Vul je eigen data in!)
+    const firebaseConfig = {
+        apiKey: "AIzaSy...",
+        authDomain: "jouw-app.firebaseapp.com",
+        databaseURL: "https://jouw-app-default-rtdb.firebaseio.com",
+        projectId: "jouw-app",
+        storageBucket: "jouw-app.appspot.com",
+        messagingSenderId: "12345",
+        appId: "1:12345:web:abcde"
+    };
+
+    // Initialiseer Firebase (vangen foutmelding op als config leeg is)
+    let database;
+    try {
+        firebase.initializeApp(firebaseConfig);
+        database = firebase.database();
+    } catch (e) {
+        console.error("Firebase niet geconfigureerd. Knoppen werken alleen visueel.");
+    }
+
+    // --- CHAT LOGICA ---
+    const userInput = document.getElementById('userInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const messages = document.getElementById('messages');
+
+    function addMessage(sender, text) {
+        const div = document.createElement('div');
+        div.classList.add('msg', sender);
+        div.innerText = text;
+        messages.appendChild(div);
+        messages.scrollTop = messages.scrollHeight;
+    }
+
+    function handleSend() {
+        const text = userInput.value.trim();
+        if (!text) return;
+
+        addMessage('user', text);
+        userInput.value = '';
+
+        // Simpele bot reactie
+        setTimeout(() => {
+            addMessage('bot', "Genoteerd. Is dit alles voor het proces-verbaal?");
+        }, 1000);
+    }
+
+    sendBtn.addEventListener('click', handleSend);
+    userInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') handleSend(); });
+
+    // --- DOSSIER LOGICA ---
+    const pvInput = document.getElementById('pvInput');
+    const saveBtn = document.getElementById('saveBtn');
+    const feed = document.getElementById('feed-container');
+    const clearBtn = document.getElementById('clearBtn');
+
+    function saveDossier() {
+        const text = pvInput.value.trim();
+        if (!text) return alert("Voer eerst een verklaring in.");
+
+        const data = {
+            content: text,
+            timestamp: new Date().toLocaleString(),
+            words: text.split(/\s+/).length
+        };
+
+        if (database) {
+            database.ref('dossier').push(data)
+                .then(() => { pvInput.value = ''; })
+                .catch(err => alert("Database fout: " + err.message));
+        } else {
+            // Fallback als Firebase niet is ingesteld
+            renderItem(data);
+            pvInput.value = '';
+        }
+    }
+
+    function renderItem(data) {
+        const item = document.createElement('div');
+        item.className = 'feed-item';
+        item.innerHTML = `
+            <div class="pv-text">${data.content}</div>
+            <div class="fb-section">Gearchiveerd op: ${data.timestamp}</div>
+            <div class="word-count">Aantal woorden: ${data.words}</div>
+        `;
+        feed.prepend(item);
+    }
+
+    // Luister naar database updates
+    if (database) {
+        database.ref('dossier').on('value', (snapshot) => {
+            feed.innerHTML = '';
+            snapshot.forEach((child) => {
+                renderItem(child.val());
+            });
+        });
+    }
+
+    saveBtn.addEventListener('click', saveDossier);
+
+    clearBtn.addEventListener('click', () => {
+        if (confirm("Dossier definitief vernietigen?")) {
+            if (database) database.ref('dossier').remove();
+            feed.innerHTML = '';
+        }
+    });
+
+</script>
+
+</body>
+</html>
