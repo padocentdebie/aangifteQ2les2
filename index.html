@@ -4,92 +4,59 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aangifte Dossier - Vertrouwelijk</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
     <style>
-        body { font-family: 'Courier New', Courier, monospace; background-color: #0f0f0f; color: #00ff00; display: flex; justify-content: center; padding: 20px; }
-        #chat-container { width: 100%; max-width: 600px; background: #1a1a1a; border: 2px solid #333; border-radius: 5px; box-shadow: 0 0 20px rgba(255,0,0,0.2); }
-        #messages { height: 450px; overflow-y: auto; padding: 20px; border-bottom: 2px solid #333; display: flex; flex-direction: column; }
+        body { font-family: 'Courier New', Courier, monospace; background-color: #0f0f0f; color: #00ff00; margin: 0; padding: 20px; }
+        .main-wrapper { display: flex; gap: 20px; max-width: 1200px; margin: auto; flex-wrap: wrap; }
+        
+        /* Chat Sectie */
+        #chat-container { flex: 1; min-width: 350px; background: #1a1a1a; border: 2px solid #333; border-radius: 5px; box-shadow: 0 0 20px rgba(255,0,0,0.2); height: 700px; display: flex; flex-direction: column; }
+        #messages { flex: 1; overflow-y: auto; padding: 20px; border-bottom: 2px solid #333; display: flex; flex-direction: column; }
         .msg { margin-bottom: 15px; padding: 12px; border-radius: 4px; max-width: 85%; line-height: 1.4; }
         .bot { background: #262626; align-self: flex-start; color: #ff5555; border-left: 4px solid #ff0000; }
         .user { background: #333; align-self: flex-end; color: #00ff00; border-right: 4px solid #00ff00; }
+        
+        /* Dossier Sectie */
+        #dossier-container { flex: 1; min-width: 350px; background: #1a1a1a; border: 2px solid #333; border-radius: 5px; height: 700px; display: flex; flex-direction: column; padding: 20px; overflow-y: auto; }
         #input-area { display: flex; padding: 15px; background: #111; }
-        input { flex: 1; padding: 12px; border: 1px solid #333; background: #000; color: #00ff00; outline: none; }
-        button { margin-left: 10px; padding: 10px 20px; background: #aa0000; border: none; color: white; cursor: pointer; font-weight: bold; }
+        input, textarea { flex: 1; padding: 12px; border: 1px solid #333; background: #000; color: #00ff00; outline: none; font-family: inherit; }
+        textarea { min-height: 100px; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
+        
+        button { padding: 10px 20px; background: #aa0000; border: none; color: white; cursor: pointer; font-weight: bold; text-transform: uppercase; }
         button:hover { background: #ff0000; }
-        h2 { text-align: center; color: #ff0000; text-transform: uppercase; letter-spacing: 2px; }
+        button:disabled { background: #444; color: #888; cursor: not-allowed; }
+
+        .feed-item { background: #222; border: 1px solid #333; padding: 15px; margin-top: 20px; border-radius: 4px; }
+        .pv-text { color: #fff; white-space: pre-wrap; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 10px; font-size: 0.9em; }
+        .fb-section { color: #ffcc00; font-size: 0.85em; margin-bottom: 10px; }
+        .word-count { font-size: 0.7em; text-align: right; margin: 5px 0; color: #888; }
+        
+        h2 { text-align: center; color: #ff0000; text-transform: uppercase; letter-spacing: 2px; margin-top: 0; }
     </style>
 </head>
 <body>
 
-<div id="chat-container">
-    <h2>Aangifte les 2 Q2</h2>
-    <div id="messages">
-        <div class="msg bot">Kan ik aangifte doen? Maar schiet op, heb wel wat beters te doen. Stel maar een vraag als je wat wil weten.</div>
+<div class="main-wrapper">
+    <div id="chat-container">
+        <h2>Aangifte les 2 Q2</h2>
+        <div id="messages">
+            <div class="msg bot">Kan ik aangifte doen? Maar schiet op, heb wel wat beters te doen. Stel maar een vraag als je wat wil weten.</div>
+        </div>
+        <div id="input-area">
+            <input type="text" id="userInput" placeholder="Typ je vraag..." onkeypress="handleKeyPress(event)">
+            <button onclick="sendMessage()">STUUR</button>
+        </div>
     </div>
-    <div id="input-area">
-        <input type="text" id="userInput" placeholder="Typ je vraag hier..." onkeypress="handleKeyPress(event)">
-        <button onclick="sendMessage()">STUUR</button>
-    </div>
-</div>
 
-<script>
-    /* AANPASBARE SECTIE:
-       Hieronder staan de feiten. Je kunt de teksten tussen de aanhalingstekens 
-       eenvoudig veranderen of regels toevoegen.
-    */
-    const feiten = [
-        "Die gast heet Marco L. en hij is echt een psycho geworden sinds ik het uit heb gezet.",
-        "Ik ben geboren op 25 november 1995 in Amsterdam, mocht je m'n ID willen checken.",
-        "Hij valt me de hele dag lastig via WhatsApp, Insta en zelfs Tikkie. Ziek in z'n hoofd.",
-        "Hij rijdt in een matgrijze Volkswagen Golf, kenteken 42-SBF-9. Die bak staat constant op de loer.",
-        "M'n osso is aan de Larixlaan 34 in Utrecht. Hij hangt daar urenlang bij die kapotte lantaarnpaal.",
-        "In het Julianapark kwam hij me laatst achterna bij die zwarte vijver. Hij stond te gluren bij dat verroeste bankje.",
-        "Die vage gast staat me ook op te wachten bij m'n werk in het centrum. Ik durf niet eens meer normaal naar de supermarkt.",
-        "Hij belt m'n matties en m'n moeder met onzinverhalen om me zwart te maken. Hij probeert alles te slopen.",
-        "Ik wil dat hij nu wordt aangepakt. Mijn eis: 6 maanden straatverbod, ook weg blijven bij m'n werk. Ik wil rust!"
-    ];
+    <div id="dossier-container">
+        <h2>PV Dossier</h2>
+        <textarea id="pvInput" placeholder="Werk hier de officiële verklaring uit..."></textarea>
+        <button onclick="sendToFirebase()">INLEVEREN BIJ DOSSIER</button>
 
-    let feitIndex = 0;
+        <div id="feed-container"></div>
 
-    function handleKeyPress(e) {
-        if (e.keyCode === 13) sendMessage();
-    }
-
-    function sendMessage() {
-        const input = document.getElementById('userInput');
-        const text = input.value.trim().toLowerCase();
-        
-        if (!text) return;
-
-        addMessage(input.value, 'user');
-        input.value = '';
-
-        // Vertraging voor de 'vibe'
-        setTimeout(() => {
-            // Check op de 'geef me alles' vraag
-            if (text.includes("hele") || text.includes("alles") || text.includes("volledig") || text.includes("verklaring")) {
-                addMessage("Echt niet. Dat doe ik niet, doe maar wat moeite. Ik ben je assistent niet.", 'bot');
-            } 
-            // Geef het volgende feit
-            else if (feitIndex < feiten.length) {
-                addMessage(feiten[feitIndex], 'bot');
-                feitIndex++;
-            } 
-            // Als alles verteld is
-            else {
-                addMessage("Ik heb alles al gezegd wat ik kwijt wil. Kappen nu.", 'bot');
-            }
-        }, 1000);
-    }
-
-    function addMessage(text, sender) {
-        const div = document.createElement('div');
-        div.className = `msg ${sender}`;
-        div.innerText = text;
-        const container = document.getElementById('messages');
-        container.appendChild(div);
-        container.scrollTop = container.scrollHeight;
-    }
-</script>
-
-</body>
-</html>
+        <div style="margin-top: auto; padding-top: 20px; text-align: center;">
+            <button onclick="clearDatabase()" style="font-size: 0.7em; background: #333;">WIS DOSSIER DATA</
