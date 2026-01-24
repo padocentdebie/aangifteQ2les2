@@ -60,7 +60,6 @@
 </div>
 
 <script>
-    // --- FIREBASE SETUP ---
     const firebaseConfig = {
         apiKey: "AIzaSyC-Of0AUOd-kVo2RKxYc-68Gr-RO4HdRk0",
         authDomain: "q2aangifteles2.firebaseapp.com",
@@ -70,12 +69,11 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // --- EVI RESPONSES (VERDRIETIGER) ---
     const responses = {
         wie: [
-            "Ik ben Evi de Vries. Ik ben drieëntwintig... ik woon hier pas net en nu is dit al gebeurd. Ik voel me zo onveilig.",
-            "Mijn naam is Evi de Vries. Het spijt me dat ik zo snuif, maar ik ben echt heel erg ontdaan.",
-            "Evi de Vries... ik ben geboren op twaalf maart tweeduizend twee. Ik wilde gewoon een frisse start maken in deze stad."
+            "Ik ben Evi de Vries. Ik ben geboren op vier november tweeduizend twee in Maastricht. Ik mis Limburg nu wel een beetje.",
+            "Mijn volledige naam is Evi de Vries. Ik ben eenentwintig jaar geleden geboren in Maastricht. Hier in Utrecht voel ik me nu even niet zo thuis.",
+            "Evi de Vries... vier-elf-tweeduizend twee. Ik kom oorspronkelijk uit Maastricht, maar ik woon nu pas een paar maanden hier op mezelf."
         ],
         fiets: [
             "Het was mijn witte Gazelle Esprit. Ik heb elke euro drie keer omgedraaid om die fiets te kunnen kopen. Hij was zeshonderdvijftig euro waard... ik kan dat nooit meer opnieuw betalen.",
@@ -83,9 +81,9 @@
             "Mijn witte Gazelle... er zat zo'n handig mandje op. Hij was nog zo nieuw en glimmend. Ik ben er zo kapot van."
         ],
         waar: [
-            "Bij mijn nieuwe huis aan de Grachtengordel-West honderdtwaalf. Ik had hem nog zo goed vastgemaakt aan de lantaarnpaal voor de deur.",
-            "Grachtengordel-West honderdtwaalf... daar stond hij. Ik dacht dat het een veilige buurt was, maar blijkbaar niet.",
-            "Voor mijn eigen deur aan de Grachtengordel-West. Ik kan het nog steeds niet geloven als ik naar die lege lantaarnpaal kijk."
+            "Ik woon op de Vredenburg vierentwintig-B, midden in het centrum. Ik dacht dat er hier genoeg sociale controle zou zijn, maar blijkbaar niet.",
+            "Vredenburg vierentwintig-B... daar voor de deur stond hij vast aan de lantaarnpaal. Ik kan het nog steeds niet geloven als ik naar die lege plek kijk.",
+            "Mijn adres is Vredenburg vierentwintig-B. Ik had de fiets gisteravond rond acht uur nog gezien toen ik thuiskwam van werk."
         ],
         nacht: [
             "Ik lag in bed en hoorde rond drie uur een scooter. Ik had nooit verwacht dat ze mijn fiets aan het meenemen waren. Ik voel me zo stom dat ik niet ben gaan kijken.",
@@ -104,7 +102,6 @@
         ]
     };
 
-    // --- CHAT FUNCTIE ---
     function chatWithBot() {
         const input = document.getElementById('botInput');
         const val = input.value.trim().toLowerCase();
@@ -117,14 +114,13 @@
             let reply;
             const getRnd = (arr) => arr[Math.floor(Math.random() * arr.length)];
             
-            if (val.includes("wie") || val.includes("naam") || val.includes("heet")) reply = getRnd(responses.wie);
+            if (val.includes("wie") || val.includes("naam") || val.includes("heet") || val.includes("geboren") || val.includes("datum")) reply = getRnd(responses.wie);
             else if (val.includes("fiets") || val.includes("merk") || val.includes("kleur") || val.includes("waarde")) reply = getRnd(responses.fiets);
-            else if (val.includes("waar") || val.includes("adres") || val.includes("woon")) reply = getRnd(responses.waar);
+            else if (val.includes("waar") || val.includes("adres") || val.includes("woon") || val.includes("straat")) reply = getRnd(responses.waar);
             else if (val.includes("nacht") || val.includes("scooter") || val.includes("gehoord")) reply = getRnd(responses.nacht);
             else if (val.includes("slot") || val.includes("kabel") || val.includes("knippen")) reply = getRnd(responses.slot);
-            else {
-                reply = getRnd(responses.onzin);
-            }
+            else reply = getRnd(responses.onzin);
+            
             addBubble(reply, 'bot');
         }, 600);
     }
@@ -138,7 +134,6 @@
         msgContainer.scrollTop = msgContainer.scrollHeight;
     }
 
-    // --- AANGIFTE FUNCTIES ---
     function submitToFirebase() {
         const tekst = document.getElementById('pvInput').value.trim();
         if(!tekst) return;
@@ -159,7 +154,6 @@
 
     function clearAll() { if(confirm("Aangiftes wissen?")) db.ref('posts').remove(); }
 
-    // --- LIVE FEED ---
     db.ref('posts').on('value', (snap) => {
         const container = document.getElementById('feed-container');
         container.innerHTML = "<h2>BINNENGEKOMEN AANGIFTES</h2>";
