@@ -15,7 +15,7 @@
         #chat-header { padding: 15px; background: #2980b9; color: white; text-align: center; font-weight: bold; }
         #messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #f4f7f6; }
         
-        #dossier-section { flex: 1.2; min-width: 400px; background: #ffffff; border: 2px solid #bdc3c7; display: flex; flex-direction: column; padding: 15px; border-radius: 8px; color: #333; }
+        #aangifte-section { flex: 1.2; min-width: 400px; background: #ffffff; border: 2px solid #bdc3c7; display: flex; flex-direction: column; padding: 15px; border-radius: 8px; color: #333; }
         
         .bubble { max-width: 85%; padding: 12px; border-radius: 15px; font-size: 0.95em; line-height: 1.4; animation: fadeIn 0.3s; }
         .bot { align-self: flex-start; background: #e8e8e8; color: #2c3e50; border-bottom-left-radius: 2px; }
@@ -42,7 +42,7 @@
     <div id="chat-section">
         <div id="chat-header">AANGIFTE: EVI DE VRIES</div>
         <div id="messages">
-            <div class="bubble bot">Hallo. Ik ben Evi. Ik kom aangifte doen omdat mijn fiets weg is. Ik vind het een beetje spannend om hier te zijn.</div>
+            <div class="bubble bot">Hallo... ik ben Evi. Sorry dat ik zo emotioneel ben, maar ik ben de hele ochtend al aan het huilen. Mijn mooie fiets is gestolen...</div>
         </div>
         <div class="input-area">
             <input type="text" id="botInput" style="flex:1; margin-right: 5px;" placeholder="Stel een vraag..." onkeypress="if(event.key==='Enter') chatWithBot()">
@@ -50,10 +50,10 @@
         </div>
     </div>
 
-    <div id="dossier-section">
-        <h2>OFFICIEEL DOSSIER</h2>
-        <textarea id="pvInput" placeholder="Typ de verklaring uit op basis van het verhoor..."></textarea>
-        <button class="btn-pv" onclick="submitToFirebase()">OPSLAAN IN DOSSIER</button>
+    <div id="aangifte-section">
+        <h2>OFFICIËLE AANGIFTE</h2>
+        <textarea id="pvInput" placeholder="Typ de verklaring uit op basis van Evi's verhaal..."></textarea>
+        <button class="btn-pv" onclick="submitToFirebase()">OPSLAAN IN AANGIFTE</button>
         <div id="feed-container" style="flex:1; overflow-y:auto; margin-top:10px;"></div>
         <button onclick="clearAll()" style="font-size: 0.7em; background: #95a5a6; margin-top:10px; color: white;">WIS FEED</button>
     </div>
@@ -70,37 +70,37 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // --- EVI RESPONSES ---
+    // --- EVI RESPONSES (VERDRIETIGER) ---
     const responses = {
         wie: [
-            "Ik heet Evi de Vries. Ik ben drieëntwintig jaar oud en ik woon pas sinds kort in Utrecht.",
-            "Mijn naam is Evi de Vries. Ik heb mijn identiteitsbewijs hier in mijn tas zitten als u dat wilt zien.",
-            "Ik ben Evi. Mijn achternaam is de Vries. Ik ben geboren op twaalf maart tweeduizend twee."
+            "Ik ben Evi de Vries. Ik ben drieëntwintig... ik woon hier pas net en nu is dit al gebeurd. Ik voel me zo onveilig.",
+            "Mijn naam is Evi de Vries. Het spijt me dat ik zo snuif, maar ik ben echt heel erg ontdaan.",
+            "Evi de Vries... ik ben geboren op twaalf maart tweeduizend twee. Ik wilde gewoon een frisse start maken in deze stad."
         ],
         fiets: [
-            "Het was een witte Gazelle Esprit. Ik heb er heel lang voor gespaard, hij was zeshonderdvijftig euro waard.",
-            "De fiets is wit en van het merk Gazelle. Er zat een klein rekje voorop voor mijn tas. Hij was nog bijna nieuw.",
-            "Mijn witte Gazelle... ik ben er altijd zo voorzichtig mee geweest. Hij kostte zeshonderdvijftig euro."
+            "Het was mijn witte Gazelle Esprit. Ik heb elke euro drie keer omgedraaid om die fiets te kunnen kopen. Hij was zeshonderdvijftig euro waard... ik kan dat nooit meer opnieuw betalen.",
+            "Een witte damesfiets van Gazelle. Hij was mijn alles, ik ging er overal mee naartoe. Nu heb ik helemaal niets meer.",
+            "Mijn witte Gazelle... er zat zo'n handig mandje op. Hij was nog zo nieuw en glimmend. Ik ben er zo kapot van."
         ],
         waar: [
-            "Ik woon aan de Grachtengordel-West honderdtwaalf. De fiets stond daar voor de deur aan een lantaarnpaal.",
-            "De diefstal was bij mijn huis op de Grachtengordel-West. Ik had hem gisteravond netjes vastgezet.",
-            "Aan de Grachtengordel-West honderdtwaalf. Daar bij die grote lantaarnpaal voor mijn raam."
+            "Bij mijn nieuwe huis aan de Grachtengordel-West honderdtwaalf. Ik had hem nog zo goed vastgemaakt aan de lantaarnpaal voor de deur.",
+            "Grachtengordel-West honderdtwaalf... daar stond hij. Ik dacht dat het een veilige buurt was, maar blijkbaar niet.",
+            "Voor mijn eigen deur aan de Grachtengordel-West. Ik kan het nog steeds niet geloven als ik naar die lege lantaarnpaal kijk."
         ],
         nacht: [
-            "Het was vannacht rond een uur of drie. Ik hoorde ineens het geluid van een scooter die stilhield onder mijn raam.",
-            "Ik werd wakker van een ronkende scooter. Daarna hoorde ik voetstappen en een heel akelig geluid van metaal op metaal.",
-            "Ik hoorde eerst die scooter en daarna voetstappen op de stoep. Toen hoorde ik gekraak van metaal en even later reed de scooter weer weg."
+            "Ik lag in bed en hoorde rond drie uur een scooter. Ik had nooit verwacht dat ze mijn fiets aan het meenemen waren. Ik voel me zo stom dat ik niet ben gaan kijken.",
+            "Ik werd wakker van een scooter en hoorde voetstappen. Daarna dat nare geluid van metaal dat kraakt. Ik was te bang om uit het raam te kijken en nu is hij weg.",
+            "Die scooter bleef maar stationair draaien... en toen hoorde ik die klik en dat metaalachtige geluid. Ik had iets moeten doen, maar ik durfde niet."
         ],
         slot: [
-            "Mijn cijferslot lag vanmorgen gewoon op de grond. De kabel is helemaal doormidden geknipt.",
-            "Ze hebben het dikke staalslot doorgeknipt. Op de plek waar hij door is zie je allemaal van die kleine zilveren ijzerdraadjes uitsteken.",
-            "Het slot is kapot. De kabel heeft zo'n plat snijvlak waar je precies kunt zien dat er een tang is gebruikt."
+            "Mijn dikke cijferslot lag gewoon doormidden op de stoep. Ik moest huilen toen ik het zag liggen.",
+            "Ze hebben de kabel gewoon doorgeknipt alsof het niets was. Je ziet al die kleine ijzerdraadjes zitten bij het snijvlak. Het ziet er zo gewelddadig uit.",
+            "Het slot is helemaal kapot. De kabel is doorgeknipt met een tang, dat zie je aan die platte, scherpe randjes aan het uiteinde."
         ],
         onzin: [
-            "Oeps, sorry... ik begrijp die vraag niet zo goed. Bedoelt u iets over mijn fiets?",
-            "Ik weet niet goed wat ik daarop moet zeggen. Ik ben nog een beetje ontdaan van de diefstal.",
-            "Kunt u dat misschien nog een keer uitleggen? Ik wil u graag helpen met het dossier."
+            "Sorry, ik kan me even niet zo goed concentreren door al dat huilen. Wat vroeg u precies?",
+            "Het spijt me... ik ben er met mijn hoofd niet helemaal bij. Ik wil gewoon mijn fiets terug.",
+            "Kunt u die vraag nog een keer stellen? Ik ben een beetje in de war door alles."
         ]
     };
 
@@ -138,7 +138,7 @@
         msgContainer.scrollTop = msgContainer.scrollHeight;
     }
 
-    // --- DOSSIER FUNCTIES ---
+    // --- AANGIFTE FUNCTIES ---
     function submitToFirebase() {
         const tekst = document.getElementById('pvInput').value.trim();
         if(!tekst) return;
@@ -146,7 +146,9 @@
             tekst: tekst,
             feedback: "",
             timestamp: Date.now()
-        }).then(() => { document.getElementById('pvInput').value = ''; });
+        }).then(() => { 
+            document.getElementById('pvInput').value = ''; 
+        });
     }
 
     function addFeedback(id) {
@@ -155,12 +157,12 @@
         db.ref('posts/' + id).update({ feedback: fb });
     }
 
-    function clearAll() { if(confirm("Feed wissen?")) db.ref('posts').remove(); }
+    function clearAll() { if(confirm("Aangiftes wissen?")) db.ref('posts').remove(); }
 
     // --- LIVE FEED ---
     db.ref('posts').on('value', (snap) => {
         const container = document.getElementById('feed-container');
-        container.innerHTML = "<h2>INGELEVERDE VERKLARINGEN</h2>";
+        container.innerHTML = "<h2>BINNENGEKOMEN AANGIFTES</h2>";
         const data = snap.val();
         if(data) {
             Object.keys(data).reverse().forEach(id => {
