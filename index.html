@@ -31,6 +31,7 @@
         
         button { background: #2980b9; color: white; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; border-radius: 4px; }
         .btn-pv { background: #27ae60; width: 100%; font-size: 1.1em; }
+        .btn-download { background: #e67e22; margin-top: 10px; width: 100%; }
         
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         h2 { margin-top: 0; font-size: 1.2em; color: #2980b9; }
@@ -46,7 +47,7 @@
         </div>
         <div class="input-area">
             <input type="text" id="botInput" style="flex:1; margin-right: 5px;" placeholder="Stel een vraag..." onkeypress="if(event.key==='Enter') chatWithBot()">
-            <button onclick="chatWithBot()">STEL VRAAG</button>
+            <button id="sendBtn" onclick="chatWithBot()">STEL VRAAG</button>
         </div>
     </div>
 
@@ -55,11 +56,14 @@
         <textarea id="pvInput" placeholder="Typ de verklaring uit op basis van Evi's verhaal..."></textarea>
         <button class="btn-pv" onclick="submitToFirebase()">OPSLAAN IN AANGIFTE</button>
         <div id="feed-container" style="flex:1; overflow-y:auto; margin-top:10px;"></div>
-        <button onclick="clearAll()" style="font-size: 0.7em; background: #95a5a6; margin-top:10px; color: white;">WIS FEED</button>
+        
+        <button class="btn-download" onclick="downloadDossier()">DOWNLOAD ALLE AANGIFTES</button>
+        <button onclick="clearAll()" style="font-size: 0.7em; background: #95a5a6; margin-top:10px; color: white; border:none; padding:5px; cursor:pointer;">WIS VOLLEDIGE FEED</button>
     </div>
 </div>
 
 <script>
+    // --- FIREBASE SETUP ---
     const firebaseConfig = {
         apiKey: "AIzaSyC-Of0AUOd-kVo2RKxYc-68Gr-RO4HdRk0",
         authDomain: "q2aangifteles2.firebaseapp.com",
@@ -69,11 +73,14 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
+    let localData = {}; // Voor de download functie
+
+    // --- EVI RESPONSES ---
     const responses = {
         wie: [
-            "Ik ben Evi de Vries. Ik ben geboren op vier november tweeduizend twee in Maastricht. Ik mis Limburg nu wel een beetje.",
-            "Mijn volledige naam is Evi de Vries. Ik ben eenentwintig jaar geleden geboren in Maastricht. Hier in Utrecht voel ik me nu even niet zo thuis.",
-            "Evi de Vries... vier-elf-tweeduizend twee. Ik kom oorspronkelijk uit Maastricht, maar ik woon nu pas een paar maanden hier op mezelf."
+            "Ik ben Evi de Vries. Ik ben geboren op vier november tweeduizend twee in Maastricht. Ik mis Limburg nu wel een beetje door dit alles.",
+            "Mijn volledige naam is Evi de Vries. Ik ben geboren op vier-elf-tweeduizend twee in Maastricht. Ik wilde gewoon een nieuwe start maken hier.",
+            "Evi de Vries... mijn verjaardag is vier november tweeduizend twee. Ik kom oorspronkelijk uit Maastricht, maar ik woon nu pas een paar maanden hier op mezelf."
         ],
         fiets: [
             "Het was mijn witte Gazelle Esprit. Ik heb elke euro drie keer omgedraaid om die fiets te kunnen kopen. Hij was zeshonderdvijftig euro waard... ik kan dat nooit meer opnieuw betalen.",
@@ -81,7 +88,7 @@
             "Mijn witte Gazelle... er zat zo'n handig mandje op. Hij was nog zo nieuw en glimmend. Ik ben er zo kapot van."
         ],
         waar: [
-            "Ik woon op de Vredenburg vierentwintig-B, midden in het centrum. Ik dacht dat er hier genoeg sociale controle zou zijn, maar blijkbaar niet.",
+            "Ik woon op de Vredenburg vierentwintig-B in Utrecht. Ik dacht dat het een veilige straat was, maar blijkbaar niet.",
             "Vredenburg vierentwintig-B... daar voor de deur stond hij vast aan de lantaarnpaal. Ik kan het nog steeds niet geloven als ik naar die lege plek kijk.",
             "Mijn adres is Vredenburg vierentwintig-B. Ik had de fiets gisteravond rond acht uur nog gezien toen ik thuiskwam van werk."
         ],
@@ -102,6 +109,7 @@
         ]
     };
 
+    // --- CHAT FUNCTIE ---
     function chatWithBot() {
         const input = document.getElementById('botInput');
         const val = input.value.trim().toLowerCase();
@@ -114,13 +122,24 @@
             let reply;
             const getRnd = (arr) => arr[Math.floor(Math.random() * arr.length)];
             
-            if (val.includes("wie") || val.includes("naam") || val.includes("heet") || val.includes("geboren") || val.includes("datum")) reply = getRnd(responses.wie);
-            else if (val.includes("fiets") || val.includes("merk") || val.includes("kleur") || val.includes("waarde")) reply = getRnd(responses.fiets);
-            else if (val.includes("waar") || val.includes("adres") || val.includes("woon") || val.includes("straat")) reply = getRnd(responses.waar);
-            else if (val.includes("nacht") || val.includes("scooter") || val.includes("gehoord")) reply = getRnd(responses.nacht);
-            else if (val.includes("slot") || val.includes("kabel") || val.includes("knippen")) reply = getRnd(responses.slot);
-            else reply = getRnd(responses.onzin);
-            
+            if (val.includes("wie") || val.includes("naam") || val.includes("heet") || val.includes("geboren") || val.includes("datum") || val.includes("wanneer") || val.includes("dag") || val.includes("geboorte") || val.includes("maastricht")) {
+                reply = getRnd(responses.wie);
+            }
+            else if (val.includes("fiets") || val.includes("merk") || val.includes("kleur") || val.includes("waarde") || val.includes("gazelle")) {
+                reply = getRnd(responses.fiets);
+            }
+            else if (val.includes("waar") || val.includes("adres") || val.includes("woon") || val.includes("straat") || val.includes("nummer") || val.includes("vredenburg")) {
+                reply = getRnd(responses.waar);
+            }
+            else if (val.includes("nacht") || val.includes("scooter") || val.includes("gehoord") || val.includes("tijd") || val.includes("hoe laat")) {
+                reply = getRnd(responses.nacht);
+            }
+            else if (val.includes("slot") || val.includes("kabel") || val.includes("knippen")) {
+                reply = getRnd(responses.slot);
+            }
+            else {
+                reply = getRnd(responses.onzin);
+            }
             addBubble(reply, 'bot');
         }, 600);
     }
@@ -134,6 +153,7 @@
         msgContainer.scrollTop = msgContainer.scrollHeight;
     }
 
+    // --- AANGIFTE FUNCTIES ---
     function submitToFirebase() {
         const tekst = document.getElementById('pvInput').value.trim();
         if(!tekst) return;
@@ -141,9 +161,7 @@
             tekst: tekst,
             feedback: "",
             timestamp: Date.now()
-        }).then(() => { 
-            document.getElementById('pvInput').value = ''; 
-        });
+        }).then(() => { document.getElementById('pvInput').value = ''; });
     }
 
     function addFeedback(id) {
@@ -152,15 +170,42 @@
         db.ref('posts/' + id).update({ feedback: fb });
     }
 
-    function clearAll() { if(confirm("Aangiftes wissen?")) db.ref('posts').remove(); }
+    function clearAll() { if(confirm("Alle aangiftes definitief wissen?")) db.ref('posts').remove(); }
 
+    // --- DOWNLOAD FUNCTIE ---
+    function downloadDossier() {
+        if (!localData || Object.keys(localData).length === 0) {
+            alert("Er zijn nog geen aangiftes om te downloaden.");
+            return;
+        }
+        let content = "OVERZICHT AANGIFTES - EVI DE VRIES\n";
+        content += "====================================\n\n";
+        
+        Object.keys(localData).forEach((id, index) => {
+            const item = localData[id];
+            content += `AANGIFTE #${index + 1}\n`;
+            content += `Inhoud: ${item.tekst}\n`;
+            content += `Feedback: ${item.feedback || "Geen"}\n`;
+            content += `------------------------------------\n\n`;
+        });
+
+        const blob = new Blob([content], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "Aangiftes_Evi_de_Vries.txt";
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    // --- LIVE FEED ---
     db.ref('posts').on('value', (snap) => {
         const container = document.getElementById('feed-container');
         container.innerHTML = "<h2>BINNENGEKOMEN AANGIFTES</h2>";
-        const data = snap.val();
-        if(data) {
-            Object.keys(data).reverse().forEach(id => {
-                const item = data[id];
+        localData = snap.val(); // Sla op voor download
+        if(localData) {
+            Object.keys(localData).reverse().forEach(id => {
+                const item = localData[id];
                 const div = document.createElement('div');
                 div.className = 'feed-item';
                 div.innerHTML = `
@@ -168,7 +213,7 @@
                     <div class="fb-section">FB: ${item.feedback || 'Nog geen feedback...'}</div>
                     <div style="display:flex; gap:5px; margin-top:5px;">
                         <input type="text" id="fb-in-${id}" placeholder="Geef feedback..." style="font-size:0.7em; flex:1;">
-                        <button onclick="addFeedback('${id}')" style="font-size:0.6em; background:#34495e; color:white;">OK</button>
+                        <button onclick="addFeedback('${id}')" style="font-size:0.6em; background:#34495e; color:white; border:none; padding:4px;">OK</button>
                     </div>
                 `;
                 container.appendChild(div);
