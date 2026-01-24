@@ -60,5 +60,125 @@
 </div>
 
 <script>
+    // --- FIREBASE SETUP ---
     const firebaseConfig = {
-        apiKey: "AIzaSyC-Of0AUOd-kVo2RKxYc-68Gr
+        apiKey: "AIzaSyC-Of0AUOd-kVo2RKxYc-68Gr-RO4HdRk0",
+        authDomain: "q2aangifteles2.firebaseapp.com",
+        databaseURL: "https://q2aangifteles2-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "q2aangifteles2"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // --- EVI RESPONSES ---
+    const responses = {
+        wie: [
+            "Ik heet Evi de Vries. Ik ben drieëntwintig jaar oud en ik woon pas sinds kort in Utrecht.",
+            "Mijn naam is Evi de Vries. Ik heb mijn identiteitsbewijs hier in mijn tas zitten als u dat wilt zien.",
+            "Ik ben Evi. Mijn achternaam is de Vries. Ik ben geboren op twaalf maart tweeduizend twee."
+        ],
+        fiets: [
+            "Het was een witte Gazelle Esprit. Ik heb er heel lang voor gespaard, hij was zeshonderdvijftig euro waard.",
+            "De fiets is wit en van het merk Gazelle. Er zat een klein rekje voorop voor mijn tas. Hij was nog bijna nieuw.",
+            "Mijn witte Gazelle... ik ben er altijd zo voorzichtig mee geweest. Hij kostte zeshonderdvijftig euro."
+        ],
+        waar: [
+            "Ik woon aan de Grachtengordel-West honderdtwaalf. De fiets stond daar voor de deur aan een lantaarnpaal.",
+            "De diefstal was bij mijn huis op de Grachtengordel-West. Ik had hem gisteravond netjes vastgezet.",
+            "Aan de Grachtengordel-West honderdtwaalf. Daar bij die grote lantaarnpaal voor mijn raam."
+        ],
+        nacht: [
+            "Het was vannacht rond een uur of drie. Ik hoorde ineens het geluid van een scooter die stilhield onder mijn raam.",
+            "Ik werd wakker van een ronkende scooter. Daarna hoorde ik voetstappen en een heel akelig geluid van metaal op metaal.",
+            "Ik hoorde eerst die scooter en daarna voetstappen op de stoep. Toen hoorde ik gekraak van metaal en even later reed de scooter weer weg."
+        ],
+        slot: [
+            "Mijn cijferslot lag vanmorgen gewoon op de grond. De kabel is helemaal doormidden geknipt.",
+            "Ze hebben het dikke staalslot doorgeknipt. Op de plek waar hij door is zie je allemaal van die kleine zilveren ijzerdraadjes uitsteken.",
+            "Het slot is kapot. De kabel heeft zo'n plat snijvlak waar je precies kunt zien dat er een tang is gebruikt."
+        ],
+        onzin: [
+            "Oeps, sorry... ik begrijp die vraag niet zo goed. Bedoelt u iets over mijn fiets?",
+            "Ik weet niet goed wat ik daarop moet zeggen. Ik ben nog een beetje ontdaan van de diefstal.",
+            "Kunt u dat misschien nog een keer uitleggen? Ik wil u graag helpen met het dossier."
+        ]
+    };
+
+    // --- CHAT FUNCTIE ---
+    function chatWithBot() {
+        const input = document.getElementById('botInput');
+        const val = input.value.trim().toLowerCase();
+        if(!val) return;
+
+        addBubble(input.value, 'user-msg');
+        input.value = '';
+
+        setTimeout(() => {
+            let reply;
+            const getRnd = (arr) => arr[Math.floor(Math.random() * arr.length)];
+            
+            if (val.includes("wie") || val.includes("naam") || val.includes("heet")) reply = getRnd(responses.wie);
+            else if (val.includes("fiets") || val.includes("merk") || val.includes("kleur") || val.includes("waarde")) reply = getRnd(responses.fiets);
+            else if (val.includes("waar") || val.includes("adres") || val.includes("woon")) reply = getRnd(responses.waar);
+            else if (val.includes("nacht") || val.includes("scooter") || val.includes("gehoord")) reply = getRnd(responses.nacht);
+            else if (val.includes("slot") || val.includes("kabel") || val.includes("knippen")) reply = getRnd(responses.slot);
+            else {
+                reply = getRnd(responses.onzin);
+            }
+            addBubble(reply, 'bot');
+        }, 600);
+    }
+
+    function addBubble(text, side) {
+        const div = document.createElement('div');
+        div.className = `bubble ${side}`;
+        div.innerText = text;
+        const msgContainer = document.getElementById('messages');
+        msgContainer.appendChild(div);
+        msgContainer.scrollTop = msgContainer.scrollHeight;
+    }
+
+    // --- DOSSIER FUNCTIES ---
+    function submitToFirebase() {
+        const tekst = document.getElementById('pvInput').value.trim();
+        if(!tekst) return;
+        db.ref('posts').push({
+            tekst: tekst,
+            feedback: "",
+            timestamp: Date.now()
+        }).then(() => { document.getElementById('pvInput').value = ''; });
+    }
+
+    function addFeedback(id) {
+        const fb = document.getElementById('fb-in-'+id).value;
+        if(!fb) return;
+        db.ref('posts/' + id).update({ feedback: fb });
+    }
+
+    function clearAll() { if(confirm("Feed wissen?")) db.ref('posts').remove(); }
+
+    // --- LIVE FEED ---
+    db.ref('posts').on('value', (snap) => {
+        const container = document.getElementById('feed-container');
+        container.innerHTML = "<h2>INGELEVERDE VERKLARINGEN</h2>";
+        const data = snap.val();
+        if(data) {
+            Object.keys(data).reverse().forEach(id => {
+                const item = data[id];
+                const div = document.createElement('div');
+                div.className = 'feed-item';
+                div.innerHTML = `
+                    <div class="pv-text">${item.tekst}</div>
+                    <div class="fb-section">FB: ${item.feedback || 'Nog geen feedback...'}</div>
+                    <div style="display:flex; gap:5px; margin-top:5px;">
+                        <input type="text" id="fb-in-${id}" placeholder="Geef feedback..." style="font-size:0.7em; flex:1;">
+                        <button onclick="addFeedback('${id}')" style="font-size:0.6em; background:#34495e; color:white;">OK</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+    });
+</script>
+</body>
+</html>
