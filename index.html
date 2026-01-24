@@ -2,226 +2,63 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <title>Aangifte Systeem v2.0 - Samantha & PV Dossier</title>
+    <title>Aangifte Systeem v2.0 - Evi de Vries</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
     <style>
-        body { background-color: #050505; color: #00ff00; font-family: 'Courier New', monospace; margin: 0; padding: 20px; overflow-x: hidden; }
+        body { background-color: #0a0e14; color: #d1d1d1; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
         .main-wrapper { display: flex; gap: 20px; max-width: 1300px; margin: auto; flex-wrap: wrap; height: 90vh; }
         
-        /* Linkerkant: De Bot */
-        #chat-section { flex: 1; min-width: 350px; background: #000; border: 2px solid #ff0000; display: flex; flex-direction: column; box-shadow: 0 0 20px rgba(255,0,0,0.3); }
-        #chat-header { padding: 10px; background: #8b0000; color: white; text-align: center; font-weight: bold; }
-        #messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #0a0a0a; }
+        #chat-section { flex: 1; min-width: 350px; background: #1c222d; border: 2px solid #2980b9; display: flex; flex-direction: column; border-radius: 8px; overflow: hidden; }
+        #chat-header { padding: 15px; background: #2980b9; color: white; text-align: center; font-weight: bold; }
+        #messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #f4f7f6; }
         
-        /* Rechterkant: Inleveren & Feed */
-        #dossier-section { flex: 1.2; min-width: 400px; background: #111; border: 2px solid #00ff00; display: flex; flex-direction: column; padding: 15px; box-shadow: 0 0 20px rgba(0,255,0,0.1); }
+        #dossier-section { flex: 1.2; min-width: 400px; background: #ffffff; border: 2px solid #bdc3c7; display: flex; flex-direction: column; padding: 15px; border-radius: 8px; color: #333; }
         
-        /* Styling Bubbels & Items */
-        .bubble { max-width: 85%; padding: 10px; border: 1px solid #333; font-size: 0.9em; animation: fadeIn 0.3s; }
-        .bot { align-self: flex-start; background: #1a0000; color: #ff6666; border-left: 5px solid #ff0000; }
-        .user-msg { align-self: flex-end; background: #001a00; color: #66ff66; border-right: 5px solid #00ff00; }
+        .bubble { max-width: 85%; padding: 12px; border-radius: 15px; font-size: 0.95em; line-height: 1.4; animation: fadeIn 0.3s; }
+        .bot { align-self: flex-start; background: #e8e8e8; color: #2c3e50; border-bottom-left-radius: 2px; }
+        .user-msg { align-self: flex-end; background: #2980b9; color: white; border-bottom-right-radius: 2px; }
         
-        .feed-item { background: #1a1a1a; border: 1px solid #333; padding: 12px; margin-top: 15px; border-radius: 4px; }
-        .pv-text { color: #fff; white-space: pre-wrap; margin-bottom: 8px; font-size: 0.85em; border-bottom: 1px solid #222; padding-bottom: 5px; }
-        .fb-section { color: #ffcc00; font-size: 0.8em; font-style: italic; }
+        .feed-item { background: #f9f9f9; border: 1px solid #ddd; padding: 12px; margin-top: 15px; border-radius: 8px; }
+        .pv-text { color: #2c3e50; white-space: pre-wrap; margin-bottom: 8px; font-size: 0.9em; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .fb-section { color: #d35400; font-size: 0.85em; font-weight: bold; }
 
-        /* Inputs */
-        .input-area { display: flex; padding: 10px; background: #111; border-top: 1px solid #333; }
-        input, textarea { background: #000; border: 1px solid #444; color: #00ff00; padding: 10px; outline: none; font-family: inherit; }
-        textarea { width: 100%; min-height: 80px; box-sizing: border-box; border-color: #00ff00; margin-bottom: 10px; }
+        .input-area { display: flex; padding: 15px; background: #fff; border-top: 1px solid #eee; }
+        input[type="text"], textarea { background: #fff; border: 1px solid #ccc; color: #333; padding: 10px; border-radius: 4px; }
+        textarea { width: 100%; min-height: 120px; box-sizing: border-box; border: 2px solid #2980b9; margin-bottom: 10px; }
         
-        button { background: #ff0000; color: white; border: none; padding: 10px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
-        .btn-pv { background: #008800; width: 100%; }
-        .btn-pv:hover { background: #00ff00; color: #000; }
+        button { background: #2980b9; color: white; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; border-radius: 4px; }
+        .btn-pv { background: #27ae60; width: 100%; font-size: 1.1em; }
         
-        @keyframes shake {
-            0% { transform: translate(1px, 1px); }
-            50% { transform: translate(-3px, -2px); }
-            100% { transform: translate(1px, 1px); }
-        }
-        .shake { animation: shake 0.2s infinite; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        h2 { margin-top: 0; font-size: 1.2em; text-align: center; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        h2 { margin-top: 0; font-size: 1.2em; color: #2980b9; }
     </style>
 </head>
 <body>
 
 <div class="main-wrapper">
     <div id="chat-section">
-        <div id="chat-header">VERHOOR: S. VAN DE BERG</div>
+        <div id="chat-header">AANGIFTE: EVI DE VRIES</div>
         <div id="messages">
-            <div class="bubble bot">Nou? Hebben we de hele dag? Stel je vragen maar.</div>
+            <div class="bubble bot">Hallo. Ik ben Evi. Ik kom aangifte doen omdat mijn fiets weg is. Ik vind het een beetje spannend om hier te zijn.</div>
         </div>
         <div class="input-area">
-            <input type="text" id="botInput" placeholder="Stel een vraag..." onkeypress="if(event.key==='Enter') chatWithBot()">
-            <button onclick="chatWithBot()">VERHOOR</button>
+            <input type="text" id="botInput" style="flex:1; margin-right: 5px;" placeholder="Stel een vraag..." onkeypress="if(event.key==='Enter') chatWithBot()">
+            <button onclick="chatWithBot()">STEL VRAAG</button>
         </div>
     </div>
 
     <div id="dossier-section">
-        <h2>OFFICIEEL PROCES-VERBAAL</h2>
-        <textarea id="pvInput" placeholder="Typ hier de feitelijke verklaring uit voor het dossier..."></textarea>
-        <button class="btn-pv" onclick="submitToFirebase()">INLEVEREN BIJ DOSSIER</button>
-
-        <div id="feed-container" style="flex:1; overflow-y:auto; margin-top:10px;">
-        </div>
-
-        <button onclick="clearAll()" style="font-size: 0.6em; background: #333; margin-top:10px;">WIS DOSSIER DATA</button>
+        <h2>OFFICIEEL DOSSIER</h2>
+        <textarea id="pvInput" placeholder="Typ de verklaring uit op basis van het verhoor..."></textarea>
+        <button class="btn-pv" onclick="submitToFirebase()">OPSLAAN IN DOSSIER</button>
+        <div id="feed-container" style="flex:1; overflow-y:auto; margin-top:10px;"></div>
+        <button onclick="clearAll()" style="font-size: 0.7em; background: #95a5a6; margin-top:10px; color: white;">WIS FEED</button>
     </div>
 </div>
 
 <script>
-    // --- FIREBASE SETUP ---
     const firebaseConfig = {
-        apiKey: "AIzaSyC-Of0AUOd-kVo2RKxYc-68Gr-RO4HdRk0",
-        authDomain: "q2aangifteles2.firebaseapp.com",
-        databaseURL: "https://q2aangifteles2-default-rtdb.europe-west1.firebasedatabase.app",
-        projectId: "q2aangifteles2"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    // --- SAMANTHA LOGICA V2.0 ---
-    const responses = {
-        wie: [
-            "Samantha van de Berg. 25-11-1995. Amsterdam. Moet ik het spellen?",
-            "Ik heet Samantha. En nee, ik ga niet lachen voor de foto.",
-            "Samantha v.d. Berg. Ben je m'n ID nu alweer kwijt?"
-        ],
-        auto: [
-            "Een matgrijze Golf. 42-SBF-9. Die bak staat constant in m'n nek te hijgen.",
-            "Kenteken 42-SBF-9. Een grijze Golf. Hij rijdt er de hele tijd achteraan!",
-            "Die Golf van hem... 42-SBF-9. Ik word gek van dat ding in m'n spiegel."
-        ],
-        waar: [
-            "Larixlaan 34, Utrecht. Hij hangt daar urenlang bij die kapotte lantaarnpaal.",
-            "Bij m'n huis op de Larixlaan 34. Moet ik een plattegrond voor je tekenen?",
-            "Larixlaan in Utrecht. Hij staat daar gewoon te wachten tot ik naar buiten kom."
-        ],
-        marco: [
-            "Marco L. Een psycho. Sinds ik het uit heb gezet, spoort hij niet meer.",
-            "Die vent heet Marco L. Hij snapt het woord 'NEE' blijkbaar niet.",
-            "Marco. Mijn ex. Of nou ja, mijn stalker nu dus."
-        ],
-        park: [
-            "Het Julianapark... bij die zwarte vijver. Hij stond daar te gluren bij dat bankje.",
-            "In het Julianapark. Hij zat daar achter een boom. Zo eng.",
-            "Bij de vijver in het Julianapark. Hij was me aan het volgen."
-        ],
-        eis: [
-            "6 maanden straatverbod. En hij moet weg bij m'n werk. NU.",
-            "Dat hij uit m'n buurt blijft. Voorgoed.",
-            "Een straatverbod. Is dat nou zo moeilijk te regelen?"
-        ],
-        contact: [
-            "Appjes, Insta, Tikkies van 1 cent... hij probeert alles te slopen.",
-            "Hij blijft maar bellen. En die zieke Tikkies... 1 cent met teksten als 'ik zie je'.",
-            "Social media, telefoon, alles. Hij laat me geen seconde met rust."
-        ],
-        bonus: [
-            "Eindelijk iemand die het snapt! Het is pure STALKING. Hij heeft laatst m'n banden lek gestoken!",
-            "STALKING ja! Hij stond gisteravond gewoon in de tuin!",
-            "Het is een zieke obsessie. Hij heeft m'n banden al doorgesneden!"
-        ],
-        onzin: [
-            "Wat is dat voor een vraag? Wees eens concreet.",
-            "Zucht... heb je dit op de politieschool geleerd? Stel een normale vraag.",
-            "Ik zit hier niet voor m'n plezier hoor. Schiet eens op.",
-            "Hebben we de hele dag? Vraag gewoon wat je wil weten."
-        ]
-    };
-
-    function chatWithBot() {
-        const input = document.getElementById('botInput');
-        const val = input.value.trim().toLowerCase();
-        if(!val) return;
-
-        addBubble(input.value, 'user-msg');
-        input.value = '';
-
-        setTimeout(() => {
-            let reply;
-            const getRnd = (arr) => arr[Math.floor(Math.random() * arr.length)];
-            
-            if (val.includes("alles") || val.includes("verklaring") || val.includes("schrijf")) {
-                reply = "ECHT NIET! Ik ga niet je werk doen! Stel gewoon vragen of ik ben weg!";
-                triggerShake();
-            } 
-            else if (val.includes("belaging") || val.includes("stalking") || val.includes("lek")) reply = getRnd(responses.bonus);
-            else if (val.includes("wie") || val.includes("naam") || val.includes("heet")) reply = getRnd(responses.wie);
-            else if (val.includes("auto") || val.includes("kenteken") || val.includes("golf")) reply = getRnd(responses.auto);
-            else if (val.includes("waar") || val.includes("adres") || val.includes("woon") || val.includes("larixlaan")) reply = getRnd(responses.waar);
-            else if (val.includes("marco") || val.includes("wie is hij") || val.includes("ex")) reply = getRnd(responses.marco);
-            else if (val.includes("park") || val.includes("vijver") || val.includes("juliana")) reply = getRnd(responses.park);
-            else if (val.includes("eis") || val.includes("straf") || val.includes("verbod")) reply = getRnd(responses.eis);
-            else if (val.includes("contact") || val.includes("bericht") || val.includes("tikkie")) reply = getRnd(responses.contact);
-            else {
-                reply = getRnd(responses.onzin);
-            }
-
-            addBubble(reply, 'bot');
-        }, 600);
-    }
-
-    function addBubble(text, side) {
-        const div = document.createElement('div');
-        div.className = `bubble ${side}`;
-        div.innerText = text;
-        const msgContainer = document.getElementById('messages');
-        msgContainer.appendChild(div);
-        msgContainer.scrollTop = msgContainer.scrollHeight;
-    }
-
-    function triggerShake() {
-        const chat = document.getElementById('chat-section');
-        chat.classList.add('shake');
-        setTimeout(() => chat.classList.remove('shake'), 500);
-    }
-
-    // --- DOSSIER LOGICA ---
-    function submitToFirebase() {
-        const tekst = document.getElementById('pvInput').value.trim();
-        if(!tekst) return;
-        db.ref('posts').push({
-            tekst: tekst,
-            feedback: "",
-            timestamp: Date.now()
-        }).then(() => { document.getElementById('pvInput').value = ''; });
-    }
-
-    function addFeedback(id) {
-        const fb = document.getElementById('fb-in-'+id).value;
-        if(!fb) return;
-        db.ref('posts/' + id).update({ feedback: fb });
-    }
-
-    function clearAll() { if(confirm("Dossier wissen?")) db.ref('posts').remove(); }
-
-    // --- LIVE SYNC ---
-    db.ref('posts').on('value', (snap) => {
-        const container = document.getElementById('feed-container');
-        container.innerHTML = "<h2>LIVE FEED</h2>";
-        const data = snap.val();
-        if(data) {
-            Object.keys(data).reverse().forEach(id => {
-                const item = data[id];
-                const div = document.createElement('div');
-                div.className = 'feed-item';
-                div.innerHTML = `
-                    <div class="pv-text">${item.tekst}</div>
-                    <div class="fb-section">FB: ${item.feedback || 'Nog geen feedback...'}</div>
-                    <div style="display:flex; gap:5px; margin-top:5px;">
-                        <input type="text" id="fb-in-${id}" placeholder="Geef feedback..." style="font-size:0.7em; flex:1; height:20px;">
-                        <button onclick="addFeedback('${id}')" style="font-size:0.6em; background:#444;">OK</button>
-                    </div>
-                `;
-                container.appendChild(div);
-            });
-        }
-    });
-</script>
-</body>
-</html>
+        apiKey: "AIzaSyC-Of0AUOd-kVo2RKxYc-68Gr
