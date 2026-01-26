@@ -18,14 +18,16 @@
         }
         .main-wrapper { display: flex; gap: 20px; max-width: 1400px; margin: auto; height: calc(100vh - 40px); }
         
+        /* Linker kolom: Chat */
         #chat-section { flex: 1; min-width: 350px; background: #1c222d; border: 2px solid #2980b9; display: flex; flex-direction: column; border-radius: 8px; overflow: hidden; }
         #messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #f4f7f6; }
         
+        /* Rechter kolom: Dossier (Layout Les 1) */
         #aangifte-section { flex: 1.2; min-width: 400px; background: #ffffff; border: 2px solid #bdc3c7; display: flex; flex-direction: column; padding: 20px; border-radius: 8px; color: #333; overflow: hidden; }
         #scroll-area { flex: 1; overflow-y: auto; margin-bottom: 15px; padding-right: 10px; }
         
         #pdf-content { color: #000000 !important; }
-        .bubble { max-width: 85%; padding: 12px; border-radius: 15px; font-size: 0.95em; line-height: 1.4; }
+        .bubble { max-width: 85%; padding: 12px; border-radius: 15px; font-size: 0.95em; line-height: 1.4; animation: fadeIn 0.3s; }
         .bot { align-self: flex-start; background: #e8e8e8; color: #2c3e50; border-bottom-left-radius: 2px; }
         .user-msg { align-self: flex-end; background: #2980b9; color: white; border-bottom-right-radius: 2px; }
         
@@ -34,14 +36,16 @@
         .fb-section { color: #d35400; font-size: 0.85em; font-weight: bold; margin-bottom: 5px; }
 
         .input-area { display: flex; padding: 15px; background: #fff; border-top: 1px solid #eee; }
-        textarea { width: 100%; min-height: 100px; box-sizing: border-box; border: 2px solid #2980b9; margin-bottom: 10px; padding: 10px; resize: none; border-radius: 4px; }
+        textarea { width: 100%; min-height: 80px; box-sizing: border-box; border: 2px solid #2980b9; margin-bottom: 10px; padding: 10px; resize: none; border-radius: 4px; }
         
         .bottom-bar { border-top: 1px solid #eee; padding-top: 10px; }
-        button { background: #2980b9; color: white; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; border-radius: 4px; }
+        button { background: #2980b9; color: white; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; border-radius: 4px; transition: 0.2s; }
+        button:hover { opacity: 0.9; }
         .btn-pv { background: #27ae60; width: 100%; font-size: 1.1em; margin-bottom: 5px; }
         .btn-download { background: #e67e22; width: 100%; }
         
         #chat-header { padding: 15px; background: #2980b9; color: white; text-align: center; font-weight: bold; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         h2 { margin-top: 0; font-size: 1.2em; color: #2980b9; }
     </style>
 </head>
@@ -55,7 +59,7 @@
         </div>
         <div class="input-area">
             <input type="text" id="botInput" style="flex:1; margin-right: 5px; padding: 10px;" placeholder="Stel een vraag..." onkeypress="if(event.key==='Enter') chatWithBot()">
-            <button onclick="chatWithBot()">VRAAG</button>
+            <button id="vraagBtn" onclick="chatWithBot()">VRAAG</button>
         </div>
     </div>
 
@@ -77,6 +81,7 @@
 </div>
 
 <script>
+    // --- FIREBASE CONFIG ---
     const firebaseConfig = {
         apiKey: "AIzaSyC-Of0AUOd-kVo2RKxYc-68Gr-RO4HdRk0",
         authDomain: "q2aangifteles2.firebaseapp.com",
@@ -86,6 +91,7 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
+    // --- STATE & LOGICA ---
     let state = { wie: 0, fiets: 0, waar: 0, nacht: 0, slot: 0, diefstal: 0 };
     let fallbackCount = 0;
     let toestemmingStatus = 0;
@@ -94,12 +100,12 @@
     const responses = {
         wie: ["Mijn volledige naam is Evi de Vries. Ik ben 23 jaar.", "Ik ben geboren in Maastricht op 4 november 2002.", "Evi de Vries... dat zei ik net toch? Ik ben zo in de war."],
         fiets: ["Het was een witte Gazelle Esprit. Mijn eigen fiets waar ik zo lang voor gespaard heb.", "Mijn witte Gazelle was 650 euro waard. Dat is veel geld voor mij.", "Er zat een handig rieten mandje op het stuur van mijn Gazelle."],
-        tegenstrijdig: "Ik mis mijn blauwe fiets zo erg, ik had hem pas net...", // De bewuste fout
-        schrik: "Oeps! Oh jee... zei ik blauw? Wat stom van me! Hij is natuurlijk wit. Ik ben zo in de war door het huilen, mijn hoofd zit helemaal vol. Het is echt mijn witte Gazelle, hoor.",
+        tegenstrijdig: "Ik mis mijn blauwe fiets zo erg, ik had hem pas net...", 
+        schrik: "Oeps! Oh jee... zei ik blauw? Wat stom van me! Hij is natuurlijk wit. Ik ben zo in de war door het huilen. Het is echt mijn witte Gazelle, hoor.",
         waar: ["Ik woon aan de Vredenburg 24-B in Utrecht.", "Daar voor de deur bij Vredenburg 24-B stond hij aan een lantaarnpaal.", "Vredenburg 24-B... daar dacht ik dat mijn fiets veilig stond."],
         nacht: ["Rond drie uur vannacht hoorde ik een scooter stilstaan.", "Ik werd wakker van een brommer en voetstappen onder mijn raam.", "Ik hoorde metaalachtig gekras in de nacht, maar ik durfde niet te kijken."],
         slot: ["Hij stond vast met een dik cijferslot. Dat slot ligt nu kapot op straat.", "Ze hebben de kabel gewoon doorgeknipt, je ziet de ijzerdraadjes zitten.", "Mijn slot is vernield... het ligt nog bij de lantaarnpaal."],
-        diefstal: ["Ja, mijn witte Gazelle is gestolen! Hij is weg, foetsie.", "De dief heeft mijn fiets meegenomen terwijl ik sliep. Hij is echt gejat.", "Er is ingebroken op mijn slot en toen hebben ze mijn fiets meegenomen. Dat is toch diefstal?"],
+        diefstal: ["Ja, mijn witte Gazelle is gestolen! Hij is weg, foetsie.", "De dief heeft mijn fiets meegenomen terwijl ik sliep. Hij is echt gejat.", "Ze hebben mijn fiets meegenomen zonder te vragen. Dat is toch diefstal?"],
         toestemming: ["Wat is dat nou voor een rare vraag?! Waarom zou ik iemand toestemming geven om mijn fiets mee te nemen?", "Natuurlijk heb ik geen toestemming gegeven! Het is MIJN fiets. Ze hebben hem gewoon gestolen."],
         onzin: ["Ik begrijp niet wat dat met mijn fiets te maken heeft...", "Kunt u dat anders vragen? Ik ben een beetje van de kaart."]
     };
@@ -115,22 +121,25 @@
         setTimeout(() => {
             let reply;
             
-            // Confrontatie logica
-            if (heeftFoutGemaakt && (val.includes("blauw") || val.includes("wit") || val.includes("fout") || val.includes("verkeerd") || val.includes("eerst zei je"))) {
+            // 1. Check op confrontatie na de 'blauwe' fout
+            if (heeftFoutGemaakt && (val.includes("blauw") || val.includes("wit") || val.includes("fout") || val.includes("eerst zei je") || val.includes("verkeerd"))) {
                 reply = responses.schrik;
                 heeftFoutGemaakt = false;
             }
-            // Toestemming
-            else if (val.includes("toestemming") || val.includes("goedvinden") || val.includes("mogen")) {
+            // 2. Toestemming logica (beledigd -> nadrukkelijk nee)
+            else if (val.includes("toestemming") || val.includes("mogen") || val.includes("goedvinden")) {
                 reply = (toestemmingStatus === 0) ? responses.toestemming[0] : responses.toestemming[1];
                 toestemmingStatus = 1;
             }
-            // Diefstal
+            // 3. Diefstal / Schade
             else if (val.includes("gestolen") || val.includes("gejat") || val.includes("diefstal")) {
                 reply = responses.diefstal[state.diefstal % 3]; state.diefstal++;
             }
-            // Tegenstrijdige info trigger (20% kans bij vraag over fiets)
-            else if (val.includes("fiets") || val.includes("kleur") || val.includes("merk")) {
+            else if (val.includes("slot") || val.includes("schade") || val.includes("kapot") || val.includes("cijferslot")) {
+                reply = responses.slot[state.slot % 3]; state.slot++;
+            }
+            // 4. Fiets info + Kans op tegenstrijdigheid
+            else if (val.includes("fiets") || val.includes("kleur") || val.includes("merk") || val.includes("gazelle")) {
                 if (!heeftFoutGemaakt && Math.random() > 0.7) {
                     reply = responses.tegenstrijdig;
                     heeftFoutGemaakt = true;
@@ -138,18 +147,19 @@
                     reply = responses.fiets[state.fiets % 3]; state.fiets++;
                 }
             }
-            else if (val.includes("wie") || val.includes("naam") || val.includes("geboren")) {
+            // 5. Overige feiten
+            else if (val.includes("wie") || val.includes("naam") || val.includes("oud") || val.includes("geboren")) {
                 reply = responses.wie[state.wie % 3]; state.wie++;
-            } else if (val.includes("waar") || val.includes("adres") || val.includes("vredenburg")) {
+            } else if (val.includes("waar") || val.includes("adres") || val.includes("straat") || val.includes("vredenburg")) {
                 reply = responses.waar[state.waar % 3]; state.waar++;
-            } else if (val.includes("nacht") || val.includes("tijd") || val.includes("uur")) {
+            } else if (val.includes("nacht") || val.includes("hoe laat") || val.includes("tijd") || val.includes("uur")) {
                 reply = responses.nacht[state.nacht % 3]; state.nacht++;
-            } else if (val.includes("slot") || val.includes("schade") || val.includes("kapot")) {
-                reply = responses.slot[state.slot % 3]; state.slot++;
-            } else {
+            } 
+            // 6. Fallback (Meewerkend na 1 keer missen)
+            else {
                 fallbackCount++;
                 if (fallbackCount >= 2) {
-                    reply = "Ik ben zo in de war... maar mijn " + responses.fiets[state.fiets % 3];
+                    reply = "Ik snap de vraag niet helemaal... maar mijn " + responses.fiets[state.fiets % 3];
                     state.fiets++; fallbackCount = 0;
                 } else {
                     reply = responses.onzin[Math.floor(Math.random() * responses.onzin.length)];
@@ -181,12 +191,12 @@
         db.ref('posts/' + id).update({ feedback: fb });
     }
 
-    function clearAll() { if(confirm("Database wissen?")) db.ref('posts').remove(); }
+    function clearAll() { if(confirm("Database wissen voor een nieuwe student?")) db.ref('posts').remove(); }
 
     function downloadPDF() {
         const element = document.getElementById('pdf-content');
         const opt = {
-            margin: 10, filename: 'Aangifte_Evi_Vries.pdf',
+            margin: 10, filename: 'Aangifte_Evi_de_Vries.pdf',
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 2 },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
@@ -206,3 +216,16 @@
                 div.innerHTML = `
                     <div style="font-size:0.7em; color:#888;">${item.timestamp}</div>
                     <div class="pv-text">${item.tekst}</div>
+                    <div class="fb-section">Feedback: ${item.feedback || 'In afwachting van controle...'}</div>
+                    <div style="display:flex; gap:5px; margin-top:5px;">
+                        <input type="text" id="fb-in-${id}" placeholder="Type feedback..." style="font-size:0.7em; flex:1; padding:4px;">
+                        <button onclick="addFeedback('${id}')" style="font-size:0.6em; background:#34495e;">OK</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+    });
+</script>
+</body>
+</html>
