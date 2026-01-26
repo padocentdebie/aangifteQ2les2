@@ -8,14 +8,68 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
     <style>
-        body { background-color: #0a0e14; color: #d1d1d1; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
-        .main-wrapper { display: flex; gap: 20px; max-width: 1300px; margin: auto; flex-wrap: wrap; height: 90vh; }
+        body { 
+            background-color: #0a0e14; 
+            color: #d1d1d1; 
+            font-family: 'Segoe UI', sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            height: 100vh; 
+            overflow: hidden; 
+            box-sizing: border-box;
+        }
+
+        .main-wrapper { 
+            display: flex; 
+            gap: 20px; 
+            max-width: 1400px; 
+            margin: auto; 
+            height: calc(100vh - 40px); 
+        }
         
-        #chat-section { flex: 1; min-width: 350px; background: #1c222d; border: 2px solid #2980b9; display: flex; flex-direction: column; border-radius: 8px; overflow: hidden; }
-        #chat-header { padding: 15px; background: #2980b9; color: white; text-align: center; font-weight: bold; }
-        #messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #f4f7f6; }
+        /* Chat Sectie */
+        #chat-section { 
+            flex: 1; 
+            min-width: 350px; 
+            background: #1c222d; 
+            border: 2px solid #2980b9; 
+            display: flex; 
+            flex-direction: column; 
+            border-radius: 8px; 
+            overflow: hidden; 
+        }
         
-        #aangifte-section { flex: 1.2; min-width: 400px; background: #ffffff; border: 2px solid #bdc3c7; display: flex; flex-direction: column; padding: 15px; border-radius: 8px; color: #333; }
+        #messages { 
+            flex: 1; 
+            padding: 15px; 
+            overflow-y: auto; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 10px; 
+            background: #f4f7f6; 
+        }
+        
+        /* Aangifte Sectie (Layout van Les 1) */
+        #aangifte-section { 
+            flex: 1.2; 
+            min-width: 400px; 
+            background: #ffffff; 
+            border: 2px solid #bdc3c7; 
+            display: flex; 
+            flex-direction: column; 
+            padding: 20px; 
+            border-radius: 8px; 
+            color: #333;
+            overflow: hidden; 
+        }
+
+        /* Het scrollende deel in het midden */
+        #scroll-area {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            padding-right: 10px;
+        }
         
         .bubble { max-width: 85%; padding: 12px; border-radius: 15px; font-size: 0.95em; line-height: 1.4; animation: fadeIn 0.3s; }
         .bot { align-self: flex-start; background: #e8e8e8; color: #2c3e50; border-bottom-left-radius: 2px; }
@@ -26,13 +80,16 @@
         .fb-section { color: #d35400; font-size: 0.85em; font-weight: bold; }
 
         .input-area { display: flex; padding: 15px; background: #fff; border-top: 1px solid #eee; }
-        input[type="text"], textarea { background: #fff; border: 1px solid #ccc; color: #333; padding: 10px; border-radius: 4px; }
-        textarea { width: 100%; min-height: 120px; box-sizing: border-box; border: 2px solid #2980b9; margin-bottom: 10px; }
+        textarea { width: 100%; min-height: 100px; box-sizing: border-box; border: 2px solid #2980b9; margin-bottom: 10px; padding: 10px; resize: none; border-radius: 4px; }
         
-        button { background: #2980b9; color: white; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; border-radius: 4px; }
-        .btn-pv { background: #27ae60; width: 100%; font-size: 1.1em; }
-        .btn-download { background: #e67e22; margin-top: 10px; width: 100%; }
+        /* Knoppen Bar onderaan */
+        .bottom-bar { border-top: 1px solid #eee; padding-top: 10px; }
+        button { background: #2980b9; color: white; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; border-radius: 4px; transition: 0.2s; }
+        button:hover { opacity: 0.9; }
+        .btn-pv { background: #27ae60; width: 100%; font-size: 1.1em; margin-bottom: 5px; }
+        .btn-download { background: #e67e22; width: 100%; }
         
+        #chat-header { padding: 15px; background: #2980b9; color: white; text-align: center; font-weight: bold; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         h2 { margin-top: 0; font-size: 1.2em; color: #2980b9; }
     </style>
@@ -41,24 +98,28 @@
 
 <div class="main-wrapper">
     <div id="chat-section">
-        <div id="chat-header">AANGIFTE: EVI DE VRIES</div>
+        <div id="chat-header">VERHOOR: EVI DE VRIES</div>
         <div id="messages">
-            <div class="bubble bot">Hallo... ik ben Evi. Sorry dat ik zo emotioneel ben, maar ik ben de hele ochtend al aan het huilen. Mijn mooie fiets is gestolen...</div>
+            <div class="bubble bot">Hallo... ik ben Evi. Sorry dat ik zo emotioneel ben, maar ik heb de hele ochtend gehuild. Mijn mooie fiets is weg...</div>
         </div>
         <div class="input-area">
-            <input type="text" id="botInput" style="flex:1; margin-right: 5px;" placeholder="Stel een vraag..." onkeypress="if(event.key==='Enter') chatWithBot()">
-            <button id="sendBtn" onclick="chatWithBot()">STEL VRAAG</button>
+            <input type="text" id="botInput" style="flex:1; margin-right: 5px; padding: 10px;" placeholder="Stel een vraag..." onkeypress="if(event.key==='Enter') chatWithBot()">
+            <button id="sendBtn" onclick="chatWithBot()">VRAAG</button>
         </div>
     </div>
 
     <div id="aangifte-section">
-        <h2>OFFICIËLE AANGIFTE</h2>
-        <textarea id="pvInput" placeholder="Typ de verklaring uit op basis van Evi's verhaal..."></textarea>
-        <button class="btn-pv" onclick="submitToFirebase()">OPSLAAN IN AANGIFTE</button>
-        <div id="feed-container" style="flex:1; overflow-y:auto; margin-top:10px;"></div>
+        <div id="scroll-area">
+            <h2>OFFICIËLE AANGIFTE</h2>
+            <textarea id="pvInput" placeholder="Noteer hier de feiten die Evi vertelt..."></textarea>
+            <button class="btn-pv" onclick="submitToFirebase()">OPSLAAN IN AANGIFTE</button>
+            <div id="feed-container"></div>
+        </div>
         
-        <button class="btn-download" onclick="downloadDossier()">DOWNLOAD ALLE AANGIFTES</button>
-        <button onclick="clearAll()" style="font-size: 0.7em; background: #95a5a6; margin-top:10px; color: white; border:none; padding:5px; cursor:pointer;">WIS VOLLEDIGE FEED</button>
+        <div class="bottom-bar">
+            <button class="btn-download" onclick="downloadDossier()">DOWNLOAD DOSSIER</button>
+            <button onclick="clearAll()" style="font-size: 0.7em; background: #95a5a6; margin-top:8px; width: 100%; color: white; border:none; padding:5px; cursor:pointer;">WIS DATABASE</button>
+        </div>
     </div>
 </div>
 
@@ -73,43 +134,49 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let localData = {}; // Voor de download functie
+    let localData = {};
+    
+    // State management voor Evi (voorkomt herhaling en dwingt één feit per keer af)
+    let state = { wie: 0, fiets: 0, waar: 0, nacht: 0, slot: 0 };
 
-    // --- EVI RESPONSES ---
     const responses = {
         wie: [
-            "Ik ben Evi de Vries. Ik ben geboren op vier november tweeduizend twee in Maastricht. Ik mis Limburg nu wel een beetje door dit alles.",
-            "Mijn volledige naam is Evi de Vries. Ik ben geboren op vier-elf-tweeduizend twee in Maastricht. Ik wilde gewoon een nieuwe start maken hier.",
-            "Evi de Vries... mijn verjaardag is vier november tweeduizend twee. Ik kom oorspronkelijk uit Maastricht, maar ik woon nu pas een paar maanden hier op mezelf."
+            "Mijn volledige naam is Evi de Vries. Ik ben 23 jaar.",
+            "Ik ben geboren op 4 november 2002 in Maastricht. Ik woon pas net hier in de stad.",
+            "Evi de Vries, maar dat wist u al, toch? Ik vind dit echt heel naar allemaal."
         ],
         fiets: [
-            "Het was mijn witte Gazelle Esprit. Ik heb elke euro drie keer omgedraaid om die fiets te kunnen kopen. Hij was zeshonderdvijftig euro waard... ik kan dat nooit meer opnieuw betalen.",
-            "Een witte damesfiets van Gazelle. Hij was mijn alles, ik ging er overal mee naartoe. Nu heb ik helemaal niets meer.",
-            "Mijn witte Gazelle... er zat zo'n handig mandje op. Hij was nog zo nieuw en glimmend. Ik ben er zo kapot van."
+            "Het was een witte Gazelle Esprit. Ik was er zo zuinig op.",
+            "De fiets heeft me 650 euro gekost. Dat is voor mij echt een enorm bedrag.",
+            "Er zat een rieten mandje op het stuur, dat maakt hem heel herkenbaar."
         ],
         waar: [
-            "Ik woon op de Vredenburg vierentwintig-B in Utrecht. Ik dacht dat het een veilige straat was, maar blijkbaar niet.",
-            "Vredenburg vierentwintig-B... daar voor de deur stond hij vast aan de lantaarnpaal. Ik kan het nog steeds niet geloven als ik naar die lege plek kijk.",
-            "Mijn adres is Vredenburg vierentwintig-B. Ik had de fiets gisteravond rond acht uur nog gezien toen ik thuiskwam van werk."
+            "Ik woon aan de Vredenburg 24-B. Daar is hij ook weggehaald.",
+            "Hij stond gewoon voor de deur bij Vredenburg 24-B aan een lantaarnpaal vast.",
+            "Mijn adres is Vredenburg 24-B. Ik dacht dat het daar wel veilig was."
         ],
         nacht: [
-            "Ik lag in bed en hoorde rond drie uur een scooter. Ik had nooit verwacht dat ze mijn fiets aan het meenemen waren. Ik voel me zo stom dat ik niet ben gaan kijken.",
-            "Ik werd wakker van een scooter en hoorde voetstappen. Daarna dat nare geluid van metaal dat kraakt. Ik was te bang om uit het raam te kijken en nu is hij weg.",
-            "Die scooter bleef maar stationair draaien... en toen hoorde ik die klik en dat metaalachtige geluid. Ik had iets moeten doen, maar ik durfde niet."
+            "Het moet vannacht gebeurd zijn. Ik hoorde rond drie uur een scooter stilstaan.",
+            "Ik werd wakker van een ronkende brommer en voetstappen onder mijn raam.",
+            "Het was diep in de nacht. Ik hoorde metaalachtig gekras, maar ik durfde niet te kijken."
         ],
         slot: [
-            "Mijn dikke cijferslot lag gewoon doormidden op de stoep. Ik moest huilen toen ik het zag liggen.",
-            "Ze hebben de kabel gewoon doorgeknipt alsof het niets was. Je ziet al die kleine ijzerdraadjes zitten bij het snijvlak. Het ziet er zo gewelddadig uit.",
-            "Het slot is helemaal kapot. De kabel is doorgeknipt met een tang, dat zie je aan die platte, scherpe randjes aan het uiteinde."
+            "Hij stond vast met een dik cijferslot (kabel). Dat slot ligt nu in twee stukken op straat.",
+            "Ze hebben de kabel gewoon doorgeknipt. Ik zag de ijzerdraadjes eruit steken.",
+            "Mijn slot is vernield. Het ligt nog op de stoep bij de lantaarnpaal."
+        ],
+        lui: [
+            "Ik kan niet alles tegelijk vertellen hoor! Wat wilt u precies weten?",
+            "Wilt u dat ik de aangifte voor u schrijf? Stel me gewoon een vraag.",
+            "Ik ben echt te overstuur voor een lang verhaal. Vraag me gewoon wat u nodig heeft."
         ],
         onzin: [
-            "Sorry, ik kan me even niet zo goed concentreren door al dat huilen. Wat vroeg u precies?",
-            "Het spijt me... ik ben er met mijn hoofd niet helemaal bij. Ik wil gewoon mijn fiets terug.",
-            "Kunt u die vraag nog een keer stellen? Ik ben een beetje in de war door alles."
+            "Ik begrijp niet wat dat met mijn fiets te maken heeft...",
+            "Kunt u dat anders vragen? Ik ben een beetje in de war.",
+            "Zucht... ik wil gewoon mijn witte Gazelle terug. Kunt u me helpen?"
         ]
     };
 
-    // --- CHAT FUNCTIE ---
     function chatWithBot() {
         const input = document.getElementById('botInput');
         const val = input.value.trim().toLowerCase();
@@ -120,28 +187,37 @@
 
         setTimeout(() => {
             let reply;
-            const getRnd = (arr) => arr[Math.floor(Math.random() * arr.length)];
             
-            if (val.includes("wie") || val.includes("naam") || val.includes("heet") || val.includes("geboren") || val.includes("datum") || val.includes("wanneer") || val.includes("dag") || val.includes("geboorte") || val.includes("maastricht")) {
-                reply = getRnd(responses.wie);
+            // Check op 'luie' vragen
+            if (val.includes("alles") || val.includes("volledig") || val.includes("informatie") || val.includes("vertel je verhaal") || val.length < 3) {
+                reply = responses.lui[Math.floor(Math.random() * responses.lui.length)];
             }
-            else if (val.includes("fiets") || val.includes("merk") || val.includes("kleur") || val.includes("waarde") || val.includes("gazelle")) {
-                reply = getRnd(responses.fiets);
+            // Specifieke triggers (geeft telkens de volgende stap in de array)
+            else if (val.includes("wie") || val.includes("naam") || val.includes("heet") || val.includes("geboren")) {
+                reply = responses.wie[state.wie % 3];
+                state.wie++;
             }
-            else if (val.includes("waar") || val.includes("adres") || val.includes("woon") || val.includes("straat") || val.includes("nummer") || val.includes("vredenburg")) {
-                reply = getRnd(responses.waar);
+            else if (val.includes("fiets") || val.includes("merk") || val.includes("waarde") || val.includes("gazelle") || val.includes("mand")) {
+                reply = responses.fiets[state.fiets % 3];
+                state.fiets++;
             }
-            else if (val.includes("nacht") || val.includes("scooter") || val.includes("gehoord") || val.includes("tijd") || val.includes("hoe laat")) {
-                reply = getRnd(responses.nacht);
+            else if (val.includes("waar") || val.includes("adres") || val.includes("straat") || val.includes("vredenburg")) {
+                reply = responses.waar[state.waar % 3];
+                state.waar++;
             }
-            else if (val.includes("slot") || val.includes("kabel") || val.includes("knippen")) {
-                reply = getRnd(responses.slot);
+            else if (val.includes("nacht") || val.includes("tijd") || val.includes("hoe laat") || val.includes("uur")) {
+                reply = responses.nacht[state.nacht % 3];
+                state.nacht++;
+            }
+            else if (val.includes("slot") || val.includes("kabel") || val.includes("kapot") || val.includes("knippen")) {
+                reply = responses.slot[state.slot % 3];
+                state.slot++;
             }
             else {
-                reply = getRnd(responses.onzin);
+                reply = responses.onzin[Math.floor(Math.random() * responses.onzin.length)];
             }
             addBubble(reply, 'bot');
-        }, 600);
+        }, 650);
     }
 
     function addBubble(text, side) {
@@ -153,7 +229,6 @@
         msgContainer.scrollTop = msgContainer.scrollHeight;
     }
 
-    // --- AANGIFTE FUNCTIES ---
     function submitToFirebase() {
         const tekst = document.getElementById('pvInput').value.trim();
         if(!tekst) return;
@@ -161,7 +236,9 @@
             tekst: tekst,
             feedback: "",
             timestamp: Date.now()
-        }).then(() => { document.getElementById('pvInput').value = ''; });
+        }).then(() => { 
+            document.getElementById('pvInput').value = ''; 
+        });
     }
 
     function addFeedback(id) {
@@ -170,39 +247,25 @@
         db.ref('posts/' + id).update({ feedback: fb });
     }
 
-    function clearAll() { if(confirm("Alle aangiftes definitief wissen?")) db.ref('posts').remove(); }
+    function clearAll() { if(confirm("Database legen?")) db.ref('posts').remove(); }
 
-    // --- DOWNLOAD FUNCTIE ---
     function downloadDossier() {
-        if (!localData || Object.keys(localData).length === 0) {
-            alert("Er zijn nog geen aangiftes om te downloaden.");
-            return;
-        }
-        let content = "OVERZICHT AANGIFTES - EVI DE VRIES\n";
-        content += "====================================\n\n";
-        
-        Object.keys(localData).forEach((id, index) => {
-            const item = localData[id];
-            content += `AANGIFTE #${index + 1}\n`;
-            content += `Inhoud: ${item.tekst}\n`;
-            content += `Feedback: ${item.feedback || "Geen"}\n`;
-            content += `------------------------------------\n\n`;
+        if (!localData) return alert("Geen data.");
+        let content = "AANGIFTE DOSSIER: EVI DE VRIES\n\n";
+        Object.keys(localData).forEach(id => {
+            content += `VERKLARING: ${localData[id].tekst}\nFEEDBACK: ${localData[id].feedback || "-"}\n----------\n`;
         });
-
         const blob = new Blob([content], { type: "text/plain" });
-        const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
-        a.href = url;
-        a.download = "Aangiftes_Evi_de_Vries.txt";
+        a.href = URL.createObjectURL(blob);
+        a.download = "Aangifte_Evi.txt";
         a.click();
-        URL.revokeObjectURL(url);
     }
 
-    // --- LIVE FEED ---
     db.ref('posts').on('value', (snap) => {
         const container = document.getElementById('feed-container');
-        container.innerHTML = "<h2>BINNENGEKOMEN AANGIFTES</h2>";
-        localData = snap.val(); // Sla op voor download
+        container.innerHTML = "<h3>ARCHIEF AANGIFTES</h3>";
+        localData = snap.val();
         if(localData) {
             Object.keys(localData).reverse().forEach(id => {
                 const item = localData[id];
@@ -210,10 +273,10 @@
                 div.className = 'feed-item';
                 div.innerHTML = `
                     <div class="pv-text">${item.tekst}</div>
-                    <div class="fb-section">FB: ${item.feedback || 'Nog geen feedback...'}</div>
+                    <div class="fb-section">FB: ${item.feedback || 'In afwachting...'}</div>
                     <div style="display:flex; gap:5px; margin-top:5px;">
-                        <input type="text" id="fb-in-${id}" placeholder="Geef feedback..." style="font-size:0.7em; flex:1;">
-                        <button onclick="addFeedback('${id}')" style="font-size:0.6em; background:#34495e; color:white; border:none; padding:4px;">OK</button>
+                        <input type="text" id="fb-in-${id}" placeholder="Geef feedback..." style="font-size:0.7em; flex:1; padding:4px;">
+                        <button onclick="addFeedback('${id}')" style="font-size:0.6em; background:#34495e;">OK</button>
                     </div>
                 `;
                 container.appendChild(div);
