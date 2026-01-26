@@ -6,6 +6,7 @@
     
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
         body { 
@@ -27,7 +28,6 @@
             height: calc(100vh - 40px); 
         }
         
-        /* Chat Sectie */
         #chat-section { 
             flex: 1; 
             min-width: 350px; 
@@ -49,7 +49,6 @@
             background: #f4f7f6; 
         }
         
-        /* Aangifte Sectie (Layout van Les 1) */
         #aangifte-section { 
             flex: 1.2; 
             min-width: 400px; 
@@ -63,7 +62,6 @@
             overflow: hidden; 
         }
 
-        /* Het scrollende deel in het midden */
         #scroll-area {
             flex: 1;
             overflow-y: auto;
@@ -71,26 +69,26 @@
             padding-right: 10px;
         }
         
-        .bubble { max-width: 85%; padding: 12px; border-radius: 15px; font-size: 0.95em; line-height: 1.4; animation: fadeIn 0.3s; }
+        /* PDF specifieke styling om witte tekst te voorkomen */
+        #pdf-content { color: #000000 !important; }
+
+        .bubble { max-width: 85%; padding: 12px; border-radius: 15px; font-size: 0.95em; line-height: 1.4; }
         .bot { align-self: flex-start; background: #e8e8e8; color: #2c3e50; border-bottom-left-radius: 2px; }
         .user-msg { align-self: flex-end; background: #2980b9; color: white; border-bottom-right-radius: 2px; }
         
-        .feed-item { background: #f9f9f9; border: 1px solid #ddd; padding: 12px; margin-top: 15px; border-radius: 8px; }
-        .pv-text { color: #2c3e50; white-space: pre-wrap; margin-bottom: 8px; font-size: 0.9em; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        .fb-section { color: #d35400; font-size: 0.85em; font-weight: bold; }
+        .feed-item { background: #f9f9f9; border: 1px solid #ddd; padding: 12px; margin-top: 15px; border-radius: 8px; color: #333; }
+        .pv-text { white-space: pre-wrap; margin-bottom: 8px; font-size: 0.9em; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .fb-section { color: #d35400; font-size: 0.85em; font-weight: bold; margin-bottom: 5px; }
 
         .input-area { display: flex; padding: 15px; background: #fff; border-top: 1px solid #eee; }
         textarea { width: 100%; min-height: 100px; box-sizing: border-box; border: 2px solid #2980b9; margin-bottom: 10px; padding: 10px; resize: none; border-radius: 4px; }
         
-        /* Knoppen Bar onderaan */
         .bottom-bar { border-top: 1px solid #eee; padding-top: 10px; }
-        button { background: #2980b9; color: white; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; border-radius: 4px; transition: 0.2s; }
-        button:hover { opacity: 0.9; }
+        button { background: #2980b9; color: white; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; border-radius: 4px; }
         .btn-pv { background: #27ae60; width: 100%; font-size: 1.1em; margin-bottom: 5px; }
         .btn-download { background: #e67e22; width: 100%; }
         
         #chat-header { padding: 15px; background: #2980b9; color: white; text-align: center; font-weight: bold; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         h2 { margin-top: 0; font-size: 1.2em; color: #2980b9; }
     </style>
 </head>
@@ -100,31 +98,32 @@
     <div id="chat-section">
         <div id="chat-header">VERHOOR: EVI DE VRIES</div>
         <div id="messages">
-            <div class="bubble bot">Hallo... ik ben Evi. Sorry dat ik zo emotioneel ben, maar ik heb de hele ochtend gehuild. Mijn mooie fiets is weg...</div>
+            <div class="bubble bot">Hallo... ik ben Evi. Ik ben nog steeds een beetje aan het trillen. Mijn mooie witte fiets is weg... Kunt u me helpen?</div>
         </div>
         <div class="input-area">
             <input type="text" id="botInput" style="flex:1; margin-right: 5px; padding: 10px;" placeholder="Stel een vraag..." onkeypress="if(event.key==='Enter') chatWithBot()">
-            <button id="sendBtn" onclick="chatWithBot()">VRAAG</button>
+            <button onclick="chatWithBot()">VRAAG</button>
         </div>
     </div>
 
     <div id="aangifte-section">
         <div id="scroll-area">
-            <h2>OFFICIËLE AANGIFTE</h2>
-            <textarea id="pvInput" placeholder="Noteer hier de feiten die Evi vertelt..."></textarea>
-            <button class="btn-pv" onclick="submitToFirebase()">OPSLAAN IN AANGIFTE</button>
-            <div id="feed-container"></div>
+            <div id="pdf-content">
+                <h2>OFFICIËLE AANGIFTE - EVI DE VRIES</h2>
+                <textarea id="pvInput" placeholder="Noteer de feiten..."></textarea>
+                <button class="btn-pv" onclick="submitToFirebase()">OPSLAAN IN AANGIFTE</button>
+                <div id="feed-container"></div>
+            </div>
         </div>
         
         <div class="bottom-bar">
-            <button class="btn-download" onclick="downloadDossier()">DOWNLOAD DOSSIER</button>
+            <button class="btn-download" onclick="downloadPDF()">DOWNLOAD ALS PDF</button>
             <button onclick="clearAll()" style="font-size: 0.7em; background: #95a5a6; margin-top:8px; width: 100%; color: white; border:none; padding:5px; cursor:pointer;">WIS DATABASE</button>
         </div>
     </div>
 </div>
 
 <script>
-    // --- FIREBASE SETUP ---
     const firebaseConfig = {
         apiKey: "AIzaSyC-Of0AUOd-kVo2RKxYc-68Gr-RO4HdRk0",
         authDomain: "q2aangifteles2.firebaseapp.com",
@@ -134,47 +133,17 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let localData = {};
-    
-    // State management voor Evi (voorkomt herhaling en dwingt één feit per keer af)
     let state = { wie: 0, fiets: 0, waar: 0, nacht: 0, slot: 0 };
+    let fallbackCount = 0;
 
     const responses = {
-        wie: [
-            "Mijn volledige naam is Evi de Vries. Ik ben 23 jaar.",
-            "Ik ben geboren op 4 november 2002 in Maastricht. Ik woon pas net hier in de stad.",
-            "Evi de Vries, maar dat wist u al, toch? Ik vind dit echt heel naar allemaal."
-        ],
-        fiets: [
-            "Het was een witte Gazelle Esprit. Ik was er zo zuinig op.",
-            "De fiets heeft me 650 euro gekost. Dat is voor mij echt een enorm bedrag.",
-            "Er zat een rieten mandje op het stuur, dat maakt hem heel herkenbaar."
-        ],
-        waar: [
-            "Ik woon aan de Vredenburg 24-B. Daar is hij ook weggehaald.",
-            "Hij stond gewoon voor de deur bij Vredenburg 24-B aan een lantaarnpaal vast.",
-            "Mijn adres is Vredenburg 24-B. Ik dacht dat het daar wel veilig was."
-        ],
-        nacht: [
-            "Het moet vannacht gebeurd zijn. Ik hoorde rond drie uur een scooter stilstaan.",
-            "Ik werd wakker van een ronkende brommer en voetstappen onder mijn raam.",
-            "Het was diep in de nacht. Ik hoorde metaalachtig gekras, maar ik durfde niet te kijken."
-        ],
-        slot: [
-            "Hij stond vast met een dik cijferslot (kabel). Dat slot ligt nu in twee stukken op straat.",
-            "Ze hebben de kabel gewoon doorgeknipt. Ik zag de ijzerdraadjes eruit steken.",
-            "Mijn slot is vernield. Het ligt nog op de stoep bij de lantaarnpaal."
-        ],
-        lui: [
-            "Ik kan niet alles tegelijk vertellen hoor! Wat wilt u precies weten?",
-            "Wilt u dat ik de aangifte voor u schrijf? Stel me gewoon een vraag.",
-            "Ik ben echt te overstuur voor een lang verhaal. Vraag me gewoon wat u nodig heeft."
-        ],
-        onzin: [
-            "Ik begrijp niet wat dat met mijn fiets te maken heeft...",
-            "Kunt u dat anders vragen? Ik ben een beetje in de war.",
-            "Zucht... ik wil gewoon mijn witte Gazelle terug. Kunt u me helpen?"
-        ]
+        wie: ["Mijn volledige naam is Evi de Vries. Ik ben 23 jaar.", "Ik ben geboren in Maastricht op 4 november 2002.", "Evi de Vries... dat zei ik net toch? Ik ben zo in de war."],
+        fiets: ["Het was een witte Gazelle Esprit. Ik was er zo zuinig op.", "Hij was nog vrij nieuw, ik heb er 650 euro voor betaald.", "Er zat een handig rieten mandje op het stuur."],
+        waar: ["Ik woon aan de Vredenburg 24-B in Utrecht.", "Daar voor de deur bij Vredenburg 24-B stond hij aan een lantaarnpaal.", "Vredenburg 24-B... daar dacht ik dat hij veilig stond."],
+        nacht: ["Rond drie uur vannacht hoorde ik een scooter stilstaan.", "Ik werd wakker van een brommer en voetstappen onder mijn raam.", "Ik hoorde metaalachtig gekras in de nacht, maar ik durfde niet te kijken."],
+        slot: ["Hij stond vast met een dik cijferslot. Dat ligt nu kapot op straat.", "Ze hebben de kabel gewoon doorgeknipt, je ziet de ijzerdraadjes zitten.", "Mijn slot is vernield... het ligt nog bij de lantaarnpaal."],
+        lui: ["Ik kan niet alles tegelijk vertellen! Wat wilt u precies weten?", "Wilt u dat ik de aangifte voor u schrijf? Stel me gewoon een vraag."],
+        onzin: ["Ik begrijp niet wat dat met mijn fiets te maken heeft...", "Kunt u dat anders vragen? Ik ben een beetje van de kaart."]
     };
 
     function chatWithBot() {
@@ -187,34 +156,27 @@
 
         setTimeout(() => {
             let reply;
-            
-            // Check op 'luie' vragen
-            if (val.includes("alles") || val.includes("volledig") || val.includes("informatie") || val.includes("vertel je verhaal") || val.length < 3) {
+            if (val.includes("alles") || val.includes("volledig") || val.includes("informatie") || val.length < 3) {
                 reply = responses.lui[Math.floor(Math.random() * responses.lui.length)];
-            }
-            // Specifieke triggers (geeft telkens de volgende stap in de array)
-            else if (val.includes("wie") || val.includes("naam") || val.includes("heet") || val.includes("geboren")) {
-                reply = responses.wie[state.wie % 3];
-                state.wie++;
-            }
-            else if (val.includes("fiets") || val.includes("merk") || val.includes("waarde") || val.includes("gazelle") || val.includes("mand")) {
-                reply = responses.fiets[state.fiets % 3];
-                state.fiets++;
-            }
-            else if (val.includes("waar") || val.includes("adres") || val.includes("straat") || val.includes("vredenburg")) {
-                reply = responses.waar[state.waar % 3];
-                state.waar++;
-            }
-            else if (val.includes("nacht") || val.includes("tijd") || val.includes("hoe laat") || val.includes("uur")) {
-                reply = responses.nacht[state.nacht % 3];
-                state.nacht++;
-            }
-            else if (val.includes("slot") || val.includes("kabel") || val.includes("kapot") || val.includes("knippen")) {
-                reply = responses.slot[state.slot % 3];
-                state.slot++;
-            }
-            else {
-                reply = responses.onzin[Math.floor(Math.random() * responses.onzin.length)];
+                fallbackCount = 0;
+            } else if (val.includes("wie") || val.includes("naam") || val.includes("heet") || val.includes("geboren")) {
+                reply = responses.wie[state.wie % 3]; state.wie++; fallbackCount = 0;
+            } else if (val.includes("fiets") || val.includes("merk") || val.includes("waarde") || val.includes("gazelle")) {
+                reply = responses.fiets[state.fiets % 3]; state.fiets++; fallbackCount = 0;
+            } else if (val.includes("waar") || val.includes("adres") || val.includes("straat") || val.includes("vredenburg")) {
+                reply = responses.waar[state.waar % 3]; state.waar++; fallbackCount = 0;
+            } else if (val.includes("nacht") || val.includes("tijd") || val.includes("hoe laat") || val.includes("uur")) {
+                reply = responses.nacht[state.nacht % 3]; state.nacht++; fallbackCount = 0;
+            } else if (val.includes("slot") || val.includes("kabel") || val.includes("kapot")) {
+                reply = responses.slot[state.slot % 3]; state.slot++; fallbackCount = 0;
+            } else {
+                fallbackCount++;
+                if (fallbackCount >= 2) {
+                    reply = "Ik snap de vraag niet helemaal... maar mijn " + responses.fiets[state.fiets % 3];
+                    state.fiets++; fallbackCount = 0;
+                } else {
+                    reply = responses.onzin[Math.floor(Math.random() * responses.onzin.length)];
+                }
             }
             addBubble(reply, 'bot');
         }, 650);
@@ -232,13 +194,8 @@
     function submitToFirebase() {
         const tekst = document.getElementById('pvInput').value.trim();
         if(!tekst) return;
-        db.ref('posts').push({
-            tekst: tekst,
-            feedback: "",
-            timestamp: Date.now()
-        }).then(() => { 
-            document.getElementById('pvInput').value = ''; 
-        });
+        db.ref('posts').push({ tekst: tekst, feedback: "", timestamp: new Date().toLocaleString() });
+        document.getElementById('pvInput').value = '';
     }
 
     function addFeedback(id) {
@@ -247,33 +204,33 @@
         db.ref('posts/' + id).update({ feedback: fb });
     }
 
-    function clearAll() { if(confirm("Database legen?")) db.ref('posts').remove(); }
+    function clearAll() { if(confirm("Database wissen?")) db.ref('posts').remove(); }
 
-    function downloadDossier() {
-        if (!localData) return alert("Geen data.");
-        let content = "AANGIFTE DOSSIER: EVI DE VRIES\n\n";
-        Object.keys(localData).forEach(id => {
-            content += `VERKLARING: ${localData[id].tekst}\nFEEDBACK: ${localData[id].feedback || "-"}\n----------\n`;
-        });
-        const blob = new Blob([content], { type: "text/plain" });
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = "Aangifte_Evi.txt";
-        a.click();
+    function downloadPDF() {
+        const element = document.getElementById('pdf-content');
+        const opt = {
+            margin: 10,
+            filename: 'Aangifte_Evi_de_Vries.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        html2pdf().set(opt).from(element).save();
     }
 
     db.ref('posts').on('value', (snap) => {
         const container = document.getElementById('feed-container');
         container.innerHTML = "<h3>ARCHIEF AANGIFTES</h3>";
-        localData = snap.val();
-        if(localData) {
-            Object.keys(localData).reverse().forEach(id => {
-                const item = localData[id];
+        const data = snap.val();
+        if(data) {
+            Object.keys(data).reverse().forEach(id => {
+                const item = data[id];
                 const div = document.createElement('div');
                 div.className = 'feed-item';
                 div.innerHTML = `
+                    <div style="font-size:0.7em; color:#888;">${item.timestamp}</div>
                     <div class="pv-text">${item.tekst}</div>
-                    <div class="fb-section">FB: ${item.feedback || 'In afwachting...'}</div>
+                    <div class="fb-section">Feedback: ${item.feedback || 'In afwachting...'}</div>
                     <div style="display:flex; gap:5px; margin-top:5px;">
                         <input type="text" id="fb-in-${id}" placeholder="Geef feedback..." style="font-size:0.7em; flex:1; padding:4px;">
                         <button onclick="addFeedback('${id}')" style="font-size:0.6em; background:#34495e;">OK</button>
