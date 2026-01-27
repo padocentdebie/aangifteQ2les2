@@ -2,7 +2,7 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <title>Aangifte Systeem v3.2 - Evi de Vries</title>
+    <title>Aangifte Systeem v3.3 - Evi de Vries</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -11,9 +11,9 @@
     <style>
         :root { --police: #1a2a6c; --success: #27ae60; --warning: #f39c12; --danger: #e74c3c; }
         body { background-color: #0a0e14; color: #d1d1d1; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; height: 100vh; overflow: hidden; box-sizing: border-box; }
-        .main-wrapper { display: flex; gap: 20px; max-width: 1600px; margin: auto; height: calc(100vh - 40px); }
+        .main-wrapper { display: flex; gap: 20px; max-width: 1500px; margin: auto; height: calc(100vh - 40px); }
         
-        /* Linker kolom: Chat & Stress */
+        /* Linker kolom: Chat */
         #chat-section { flex: 1; min-width: 380px; background: #1c222d; border: 2px solid var(--police); display: flex; flex-direction: column; border-radius: 8px; overflow: hidden; }
         #messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #f4f7f6; }
         .status-header { background: var(--police); padding: 10px; color: white; display: flex; justify-content: space-between; font-size: 0.8em; }
@@ -22,24 +22,15 @@
         /* Rechter kolom: Dossier & Feedback */
         #aangifte-section { flex: 1.5; min-width: 500px; background: #ffffff; border: 2px solid #bdc3c7; display: flex; flex-direction: column; padding: 20px; border-radius: 8px; color: #333; overflow-y: auto; }
         
-        /* Analyse Dashboard */
-        .dashboard { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 15px; }
-        .point { position: relative; padding: 8px 2px; background: #eee; border: 1px solid #ccc; border-radius: 4px; text-align: center; font-size: 0.65em; font-weight: bold; color: #777; cursor: help; }
-        .point.met { background: #dcfce7; border-color: var(--success); color: var(--success); }
-        
-        /* Mousetips binnen kaders */
-        .point .tip { visibility: hidden; width: 130px; background: #334155; color: #fff; padding: 6px; position: absolute; z-index: 10; bottom: 120%; left: 50%; transform: translateX(-50%); border-radius: 4px; font-weight: normal; font-size: 0.9em; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
-        .point:hover .tip { visibility: visible; }
-
-        /* Bubbles & Inputs */
         .bubble { max-width: 85%; padding: 12px; border-radius: 15px; font-size: 0.9em; line-height: 1.4; }
-        .bot { align-self: flex-start; background: #e8e8e8; color: #2c3e50; }
-        .user-msg { align-self: flex-end; background: var(--police); color: white; }
+        .bot { align-self: flex-start; background: #e8e8e8; color: #2c3e50; border-bottom-left-radius: 2px; }
+        .user-msg { align-self: flex-end; background: var(--police); color: white; border-bottom-right-radius: 2px; }
         
-        textarea { width: 100%; min-height: 120px; border: 2px solid var(--police); padding: 10px; border-radius: 4px; resize: none; }
+        textarea { width: 100%; min-height: 150px; border: 2px solid var(--police); padding: 10px; border-radius: 4px; resize: none; font-size: 1em; }
         .feed-item { background: #f9f9f9; border: 1px solid #ddd; padding: 12px; margin-top: 15px; border-radius: 8px; }
         button { background: var(--police); color: white; border: none; padding: 10px; cursor: pointer; font-weight: bold; border-radius: 4px; }
-        .btn-pv { background: var(--success); width: 100%; margin: 10px 0; }
+        .btn-pv { background: var(--success); width: 100%; margin: 10px 0; font-size: 1.1em; }
+        .btn-download { background: #e67e22; width: 100%; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -47,123 +38,112 @@
 <div class="main-wrapper">
     <div id="chat-section">
         <div class="status-header">
-            <span>GETUIGE: EVI DE VRIES</span>
-            <span id="stress-txt">STATUS: RUSTIG</span>
+            <span>VERHOOR: EVI DE VRIES</span>
+            <span id="stress-txt">STATUS: MEEWERKEND</span>
         </div>
         <div id="stress-meter"></div>
         <div id="messages">
             <div class="bubble bot"><b>Evi:</b> Hallo... ik ben Evi. Iemand heeft vannacht mijn witte fiets gestolen bij het Vredenburg. Kunt u me helpen met de aangifte?</div>
         </div>
-        <div style="padding:10px; background:white; display:flex; gap:5px;">
-            <input type="text" id="botInput" style="flex:1; padding:8px;" placeholder="Stel een vraag..." onkeypress="if(event.key==='Enter') chatWithBot()">
+        <div style="padding:15px; background:white; display:flex; gap:10px; border-top:1px solid #eee;">
+            <input type="text" id="botInput" style="flex:1; padding:10px; border:1px solid #ccc;" placeholder="Stel een vraag..." onkeypress="if(event.key==='Enter') chatWithBot()">
             <button onclick="chatWithBot()">VRAAG</button>
         </div>
     </div>
 
     <div id="aangifte-section">
-        <div class="dashboard" id="dash"></div>
-        
         <div id="pdf-content">
-            <h2 style="color:var(--police); margin-top:0;">OFFICIËLE AANGIFTE</h2>
-            <textarea id="pvInput" oninput="analyseerTekst()" placeholder="Noteer de personalia en feiten..."></textarea>
+            <h2 style="color:var(--police); margin:0 0 10px 0;">OFFICIËLE AANGIFTE</h2>
+            <textarea id="pvInput" placeholder="Noteer de personalia en de feiten van de diefstal..."></textarea>
             <button class="btn-pv" onclick="submitToFirebase()">OPSLAAN IN AANGIFTE</button>
-            <div id="feed-container"></div>
+            
+            <div id="feed-container">
+                </div>
         </div>
 
-        <button onclick="downloadPDF()" style="background:#e67e22; width:100%; margin-top:10px; color:white; border:none; padding:10px; border-radius:4px; cursor:pointer;">DOWNLOAD ALS PDF</button>
+        <button class="btn-download" onclick="downloadPDF()">DOWNLOAD LAATSTE AANGIFTE ALS PDF</button>
+        <button onclick="clearDatabase()" style="background:#95a5a6; font-size:0.7em; margin-top:15px; width:100%; border:none; color:white; padding:5px; cursor:pointer;">WIS ARCHIEF (NIEUWE LES)</button>
     </div>
 </div>
 
 <script>
-    // --- FIREBASE ---
+    // --- FIREBASE CONFIG ---
     const firebaseConfig = { apiKey: "AIzaSyC-Of0AUOd-kVo2RKxYc-68Gr-RO4HdRk0", authDomain: "q2aangifteles2.firebaseapp.com", databaseURL: "https://q2aangifteles2-default-rtdb.europe-west1.firebasedatabase.app", projectId: "q2aangifteles2" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // --- DATA ---
-    const criteria = [
-        { id: 'c1', l: 'NAAM', w: ['vries'], t: 'Achternaam: de Vries' },
-        { id: 'c2', l: 'GEB.DATUM', w: ['4 november', '2002'], t: 'Geboren: 04-11-2002' },
-        { id: 'c3', l: 'MERK', w: ['gazelle', 'esprit'], t: 'Merk: Gazelle Esprit' },
-        { id: 'c4', l: 'WAARDE', w: ['650'], t: 'Waarde: €650' },
-        { id: 'c5', l: 'LOCATIE', w: ['vredenburg', '24'], t: 'Locatie: Vredenburg 24-B' },
-        { id: 'c6', l: 'TIJD', w: ['3 uur', 'nacht'], t: 'Tijdstip: ~03:00' },
-        { id: 'c7', l: 'SLOT', w: ['cijferslot', 'doorgeknipt'], t: 'Slot doorgeknipt' },
-        { id: 'c8', l: 'TOESTEMMING', w: ['geen toestemming'], t: 'Geen toestemming' },
-        { id: 'c9', l: 'STAD', w: ['utrecht'], t: 'Stad: Utrecht' },
-        { id: 'c10', l: 'KLEUR', w: ['wit', 'witte'], t: 'Kleur: Wit' }
-    ];
+    let stress = 0;
+    let qCount = 0;
 
-    const dash = document.getElementById('dash');
-    criteria.forEach(c => { dash.innerHTML += `<div class="point" id="${c.id}">${c.l}<span class="tip">${c.t}</span></div>`; });
-
-    let stress = 0; let qCount = 0;
-
-    // --- CHAT LOGICA ---
+    // --- EVI LOGICA (DINAMISCH) ---
     function chatWithBot() {
         const input = document.getElementById('botInput');
         const v = input.value.toLowerCase();
         if(!v) return;
 
-        qCount++; stress = Math.min(qCount * 10, 100);
+        qCount++;
+        stress = Math.min(qCount * 10, 100);
         addBubble(input.value, 'user-msg');
         input.value = '';
 
         setTimeout(() => {
             let r = "";
-            if (v.includes("sorry") || v.includes("rustig")) { qCount = Math.max(0, qCount - 5); r = "Dank u... ik ben gewoon erg gestrest."; }
-            else if (stress > 80) { r = "Ik heb het al gezegd! Een witte Gazelle! Luistert u wel?"; }
+            // Herkenning van de-escalatie
+            if (v.includes("sorry") || v.includes("begrijp") || v.includes("rustig")) {
+                qCount = Math.max(0, qCount - 5);
+                r = "Dank u wel. Ik waardeer het dat u de tijd neemt. Wat wilt u nog weten?";
+            } 
+            // Kribbige fase
+            else if (stress > 80) {
+                r = "Ik heb het nu al drie keer gezegd! Het was een witte Gazelle, bij het Vredenburg, vannacht! Schrijft u het wel op?";
+            } 
+            // Meewerkende fase (ID gegevens pas na vraag)
             else {
-                if(v.includes("achternaam")) r = "Mijn volledige naam is Evi de Vries.";
-                else if(v.includes("geboren")) r = "Ik ben van 4 november 2002.";
+                if(v.includes("achternaam") || v.includes("volledige naam")) r = "Mijn volledige naam is Evi de Vries.";
+                else if(v.includes("geboren") || v.includes("datum")) r = "Ik ben geboren op 4 november 2002.";
                 else if(v.includes("adres") || v.includes("woont")) r = "Ik woon aan de Vredenburg 24-B in Utrecht.";
-                else if(v.includes("slot")) r = "Mijn cijferslot is vernield, het ligt nog bij de lantaarnpaal.";
-                else if(v.includes("kost") || v.includes("waarde")) r = "De fiets was 650 euro waard.";
-                else r = "Het was een witte Gazelle Esprit. Ik hoorde vannacht rond 3 uur lawaai bij de deur.";
+                else if(v.includes("slot") || v.includes("vast")) r = "Hij stond vast met een cijferslot, maar dat hebben ze doorgeknipt.";
+                else if(v.includes("waarde") || v.includes("duur")) r = "De fiets was ongeveer 650 euro waard.";
+                else r = "Het was een witte Gazelle Esprit. Ik hoorde vannacht rond 3 uur lawaai beneden.";
             }
             addBubble(r, 'bot');
             updateStressUI();
-        }, 600);
+        }, 650);
     }
 
     function updateStressUI() {
         const meter = document.getElementById('stress-meter');
         const txt = document.getElementById('stress-txt');
         meter.style.width = (100 - stress) + "%";
-        if(stress > 70) { meter.style.background = "var(--danger)"; txt.innerText = "STATUS: GEÏRRITEERD"; }
-        else { meter.style.background = "var(--success)"; txt.innerText = "STATUS: MEEWERKEND"; }
+        if(stress > 70) { 
+            meter.style.background = "var(--danger)"; 
+            txt.innerText = "STATUS: GEÏRRITEERD"; 
+        } else { 
+            meter.style.background = "var(--success)"; 
+            txt.innerText = "STATUS: MEEWERKEND"; 
+        }
     }
 
     function addBubble(text, side) {
         const div = document.createElement('div');
         div.className = `bubble ${side}`;
-        div.innerHTML = text;
-        document.getElementById('messages').appendChild(div);
-        document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+        div.innerText = text;
+        const m = document.getElementById('messages');
+        m.appendChild(div);
+        m.scrollTop = m.scrollHeight;
     }
 
-    // --- ANALYSE & FIREBASE ---
-    function analyseerTekst() {
-        const txt = document.getElementById('pvInput').value.toLowerCase();
-        criteria.forEach(c => {
-            const el = document.getElementById(c.id);
-            if(c.w.some(word => txt.includes(word))) el.classList.add('met');
-            else el.classList.remove('met');
-        });
-    }
-
+    // --- DATABASE & PDF ---
     function submitToFirebase() {
-        const tekst = document.getElementById('pvInput').value.trim();
-        if(!tekst) return;
-        db.ref('posts').push({ tekst: tekst, feedback: "", timestamp: new Date().toLocaleString() });
+        const txt = document.getElementById('pvInput').value.trim();
+        if(!txt) return;
+        db.ref('posts').push({ tekst: txt, feedback: "", timestamp: new Date().toLocaleString() });
         document.getElementById('pvInput').value = '';
-        analyseerTekst();
     }
 
-    // --- FEEDBACK SYSTEEM (Hetzelfde als voorheen) ---
     db.ref('posts').on('value', (snap) => {
         const container = document.getElementById('feed-container');
-        container.innerHTML = "<h3>ARCHIEF AANGIFTES</h3>";
+        container.innerHTML = "<h3 style='margin-top:20px;'>ARCHIEF AANGIFTES</h3>";
         const data = snap.val();
         if(data) {
             Object.keys(data).reverse().forEach(id => {
@@ -171,12 +151,12 @@
                 const div = document.createElement('div');
                 div.className = 'feed-item';
                 div.innerHTML = `
-                    <div style="font-size:0.7em; color:#888;">${item.timestamp}</div>
-                    <div style="font-size:0.9em; border-bottom:1px solid #eee; padding-bottom:5px;">${item.tekst}</div>
-                    <div style="color:#d35400; font-size:0.8em; font-weight:bold; margin-top:5px;">Feedback: ${item.feedback || 'Nog geen feedback...'}</div>
-                    <div style="display:flex; gap:5px; margin-top:5px;">
-                        <input type="text" id="fb-in-${id}" placeholder="Type feedback..." style="font-size:0.7em; flex:1;">
-                        <button onclick="addFeedback('${id}')" style="font-size:0.6em; background:#34495e; color:white;">OK</button>
+                    <div style="font-size:0.75em; color:#888;">${item.timestamp}</div>
+                    <div style="font-size:0.95em; padding:5px 0; border-bottom:1px solid #eee;">${item.tekst}</div>
+                    <div style="color:var(--danger); font-size:0.85em; font-weight:bold; margin-top:5px;">Feedback: ${item.feedback || 'Wachten op beoordeling...'}</div>
+                    <div style="display:flex; gap:5px; margin-top:8px;">
+                        <input type="text" id="fb-in-${id}" placeholder="Type feedback voor student..." style="flex:1; font-size:0.8em;">
+                        <button onclick="addFeedback('${id}')" style="font-size:0.7em; background:#34495e;">OK</button>
                     </div>`;
                 container.appendChild(div);
             });
@@ -190,7 +170,11 @@
 
     function downloadPDF() {
         const element = document.getElementById('pdf-content');
-        html2pdf().from(element).save('Aangifte_Evi.pdf');
+        html2pdf().from(element).save('Aangifte_Evi_de_Vries.pdf');
+    }
+
+    function clearDatabase() {
+        if(confirm("Alle aangiftes uit het archief wissen?")) db.ref('posts').remove();
     }
 </script>
 </body>
