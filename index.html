@@ -2,180 +2,154 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <title>Aangifte Systeem v2.0 - Evi de Vries</title>
+    <title>Aangifte Systeem v3.2 - Evi de Vries</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
-        body { 
-            background-color: #0a0e14; 
-            color: #d1d1d1; 
-            font-family: 'Segoe UI', sans-serif; 
-            margin: 0; padding: 20px; 
-            height: 100vh; overflow: hidden; box-sizing: border-box;
-        }
-        .main-wrapper { display: flex; gap: 20px; max-width: 1400px; margin: auto; height: calc(100vh - 40px); }
+        :root { --police: #1a2a6c; --success: #27ae60; --warning: #f39c12; --danger: #e74c3c; }
+        body { background-color: #0a0e14; color: #d1d1d1; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; height: 100vh; overflow: hidden; box-sizing: border-box; }
+        .main-wrapper { display: flex; gap: 20px; max-width: 1600px; margin: auto; height: calc(100vh - 40px); }
         
-        /* Linker kolom: Chat */
-        #chat-section { flex: 1; min-width: 350px; background: #1c222d; border: 2px solid #2980b9; display: flex; flex-direction: column; border-radius: 8px; overflow: hidden; }
+        /* Linker kolom: Chat & Stress */
+        #chat-section { flex: 1; min-width: 380px; background: #1c222d; border: 2px solid var(--police); display: flex; flex-direction: column; border-radius: 8px; overflow: hidden; }
         #messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #f4f7f6; }
-        
-        /* Rechter kolom: Dossier (Layout Les 1) */
-        #aangifte-section { flex: 1.2; min-width: 400px; background: #ffffff; border: 2px solid #bdc3c7; display: flex; flex-direction: column; padding: 20px; border-radius: 8px; color: #333; overflow: hidden; }
-        #scroll-area { flex: 1; overflow-y: auto; margin-bottom: 15px; padding-right: 10px; }
-        
-        #pdf-content { color: #000000 !important; }
-        .bubble { max-width: 85%; padding: 12px; border-radius: 15px; font-size: 0.95em; line-height: 1.4; animation: fadeIn 0.3s; }
-        .bot { align-self: flex-start; background: #e8e8e8; color: #2c3e50; border-bottom-left-radius: 2px; }
-        .user-msg { align-self: flex-end; background: #2980b9; color: white; border-bottom-right-radius: 2px; }
-        
-        .feed-item { background: #f9f9f9; border: 1px solid #ddd; padding: 12px; margin-top: 15px; border-radius: 8px; color: #333; }
-        .pv-text { white-space: pre-wrap; margin-bottom: 8px; font-size: 0.9em; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        .fb-section { color: #d35400; font-size: 0.85em; font-weight: bold; margin-bottom: 5px; }
+        .status-header { background: var(--police); padding: 10px; color: white; display: flex; justify-content: space-between; font-size: 0.8em; }
+        #stress-meter { height: 5px; background: var(--success); width: 100%; transition: 1s; }
 
-        .input-area { display: flex; padding: 15px; background: #fff; border-top: 1px solid #eee; }
-        textarea { width: 100%; min-height: 80px; box-sizing: border-box; border: 2px solid #2980b9; margin-bottom: 10px; padding: 10px; resize: none; border-radius: 4px; }
+        /* Rechter kolom: Dossier & Feedback */
+        #aangifte-section { flex: 1.5; min-width: 500px; background: #ffffff; border: 2px solid #bdc3c7; display: flex; flex-direction: column; padding: 20px; border-radius: 8px; color: #333; overflow-y: auto; }
         
-        .bottom-bar { border-top: 1px solid #eee; padding-top: 10px; }
-        button { background: #2980b9; color: white; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; border-radius: 4px; transition: 0.2s; }
-        button:hover { opacity: 0.9; }
-        .btn-pv { background: #27ae60; width: 100%; font-size: 1.1em; margin-bottom: 5px; }
-        .btn-download { background: #e67e22; width: 100%; }
+        /* Analyse Dashboard */
+        .dashboard { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 15px; }
+        .point { position: relative; padding: 8px 2px; background: #eee; border: 1px solid #ccc; border-radius: 4px; text-align: center; font-size: 0.65em; font-weight: bold; color: #777; cursor: help; }
+        .point.met { background: #dcfce7; border-color: var(--success); color: var(--success); }
         
-        #chat-header { padding: 15px; background: #2980b9; color: white; text-align: center; font-weight: bold; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        h2 { margin-top: 0; font-size: 1.2em; color: #2980b9; }
+        /* Mousetips binnen kaders */
+        .point .tip { visibility: hidden; width: 130px; background: #334155; color: #fff; padding: 6px; position: absolute; z-index: 10; bottom: 120%; left: 50%; transform: translateX(-50%); border-radius: 4px; font-weight: normal; font-size: 0.9em; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .point:hover .tip { visibility: visible; }
+
+        /* Bubbles & Inputs */
+        .bubble { max-width: 85%; padding: 12px; border-radius: 15px; font-size: 0.9em; line-height: 1.4; }
+        .bot { align-self: flex-start; background: #e8e8e8; color: #2c3e50; }
+        .user-msg { align-self: flex-end; background: var(--police); color: white; }
+        
+        textarea { width: 100%; min-height: 120px; border: 2px solid var(--police); padding: 10px; border-radius: 4px; resize: none; }
+        .feed-item { background: #f9f9f9; border: 1px solid #ddd; padding: 12px; margin-top: 15px; border-radius: 8px; }
+        button { background: var(--police); color: white; border: none; padding: 10px; cursor: pointer; font-weight: bold; border-radius: 4px; }
+        .btn-pv { background: var(--success); width: 100%; margin: 10px 0; }
     </style>
 </head>
 <body>
 
 <div class="main-wrapper">
     <div id="chat-section">
-        <div id="chat-header">VERHOOR: EVI DE VRIES</div>
-        <div id="messages">
-            <div class="bubble bot">Hallo... ik ben Evi. Ik ben nog steeds een beetje aan het trillen. Mijn mooie witte fiets is weg... Kunt u me helpen?</div>
+        <div class="status-header">
+            <span>GETUIGE: EVI DE VRIES</span>
+            <span id="stress-txt">STATUS: RUSTIG</span>
         </div>
-        <div class="input-area">
-            <input type="text" id="botInput" style="flex:1; margin-right: 5px; padding: 10px;" placeholder="Stel een vraag..." onkeypress="if(event.key==='Enter') chatWithBot()">
-            <button id="vraagBtn" onclick="chatWithBot()">VRAAG</button>
+        <div id="stress-meter"></div>
+        <div id="messages">
+            <div class="bubble bot"><b>Evi:</b> Hallo... ik ben Evi. Iemand heeft vannacht mijn witte fiets gestolen bij het Vredenburg. Kunt u me helpen met de aangifte?</div>
+        </div>
+        <div style="padding:10px; background:white; display:flex; gap:5px;">
+            <input type="text" id="botInput" style="flex:1; padding:8px;" placeholder="Stel een vraag..." onkeypress="if(event.key==='Enter') chatWithBot()">
+            <button onclick="chatWithBot()">VRAAG</button>
         </div>
     </div>
 
     <div id="aangifte-section">
-        <div id="scroll-area">
-            <div id="pdf-content">
-                <h2>OFFICIËLE AANGIFTE - EVI DE VRIES</h2>
-                <textarea id="pvInput" placeholder="Noteer de feiten nauwkeurig..."></textarea>
-                <button class="btn-pv" onclick="submitToFirebase()">OPSLAAN IN AANGIFTE</button>
-                <div id="feed-container"></div>
-            </div>
-        </div>
+        <div class="dashboard" id="dash"></div>
         
-        <div class="bottom-bar">
-            <button class="btn-download" onclick="downloadPDF()">DOWNLOAD ALS PDF</button>
-            <button onclick="clearAll()" style="font-size: 0.7em; background: #95a5a6; margin-top:8px; width: 100%; color: white; border:none; padding:5px; cursor:pointer;">WIS DATABASE</button>
+        <div id="pdf-content">
+            <h2 style="color:var(--police); margin-top:0;">OFFICIËLE AANGIFTE</h2>
+            <textarea id="pvInput" oninput="analyseerTekst()" placeholder="Noteer de personalia en feiten..."></textarea>
+            <button class="btn-pv" onclick="submitToFirebase()">OPSLAAN IN AANGIFTE</button>
+            <div id="feed-container"></div>
         </div>
+
+        <button onclick="downloadPDF()" style="background:#e67e22; width:100%; margin-top:10px; color:white; border:none; padding:10px; border-radius:4px; cursor:pointer;">DOWNLOAD ALS PDF</button>
     </div>
 </div>
 
 <script>
-    // --- FIREBASE CONFIG ---
-    const firebaseConfig = {
-        apiKey: "AIzaSyC-Of0AUOd-kVo2RKxYc-68Gr-RO4HdRk0",
-        authDomain: "q2aangifteles2.firebaseapp.com",
-        databaseURL: "https://q2aangifteles2-default-rtdb.europe-west1.firebasedatabase.app",
-        projectId: "q2aangifteles2"
-    };
+    // --- FIREBASE ---
+    const firebaseConfig = { apiKey: "AIzaSyC-Of0AUOd-kVo2RKxYc-68Gr-RO4HdRk0", authDomain: "q2aangifteles2.firebaseapp.com", databaseURL: "https://q2aangifteles2-default-rtdb.europe-west1.firebasedatabase.app", projectId: "q2aangifteles2" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // --- STATE & LOGICA ---
-    let state = { wie: 0, fiets: 0, waar: 0, nacht: 0, slot: 0, diefstal: 0 };
-    let fallbackCount = 0;
-    let toestemmingStatus = 0;
-    let heeftFoutGemaakt = false;
+    // --- DATA ---
+    const criteria = [
+        { id: 'c1', l: 'NAAM', w: ['vries'], t: 'Achternaam: de Vries' },
+        { id: 'c2', l: 'GEB.DATUM', w: ['4 november', '2002'], t: 'Geboren: 04-11-2002' },
+        { id: 'c3', l: 'MERK', w: ['gazelle', 'esprit'], t: 'Merk: Gazelle Esprit' },
+        { id: 'c4', l: 'WAARDE', w: ['650'], t: 'Waarde: €650' },
+        { id: 'c5', l: 'LOCATIE', w: ['vredenburg', '24'], t: 'Locatie: Vredenburg 24-B' },
+        { id: 'c6', l: 'TIJD', w: ['3 uur', 'nacht'], t: 'Tijdstip: ~03:00' },
+        { id: 'c7', l: 'SLOT', w: ['cijferslot', 'doorgeknipt'], t: 'Slot doorgeknipt' },
+        { id: 'c8', l: 'TOESTEMMING', w: ['geen toestemming'], t: 'Geen toestemming' },
+        { id: 'c9', l: 'STAD', w: ['utrecht'], t: 'Stad: Utrecht' },
+        { id: 'c10', l: 'KLEUR', w: ['wit', 'witte'], t: 'Kleur: Wit' }
+    ];
 
-    const responses = {
-        wie: ["Mijn volledige naam is Evi de Vries. Ik ben 23 jaar.", "Ik ben geboren in Maastricht op 4 november 2002.", "Evi de Vries... dat zei ik net toch? Ik ben zo in de war."],
-        fiets: ["Het was een witte Gazelle Esprit. Mijn eigen fiets waar ik zo lang voor gespaard heb.", "Mijn witte Gazelle was 650 euro waard. Dat is veel geld voor mij.", "Er zat een handig rieten mandje op het stuur van mijn Gazelle."],
-        tegenstrijdig: "Ik mis mijn blauwe fiets zo erg, ik had hem pas net...", 
-        schrik: "Oeps! Oh jee... zei ik blauw? Wat stom van me! Hij is natuurlijk wit. Ik ben zo in de war door het huilen. Het is echt mijn witte Gazelle, hoor.",
-        waar: ["Ik woon aan de Vredenburg 24-B in Utrecht.", "Daar voor de deur bij Vredenburg 24-B stond hij aan een lantaarnpaal.", "Vredenburg 24-B... daar dacht ik dat mijn fiets veilig stond."],
-        nacht: ["Rond drie uur vannacht hoorde ik een scooter stilstaan.", "Ik werd wakker van een brommer en voetstappen onder mijn raam.", "Ik hoorde metaalachtig gekras in de nacht, maar ik durfde niet te kijken."],
-        slot: ["Hij stond vast met een dik cijferslot. Dat slot ligt nu kapot op straat.", "Ze hebben de kabel gewoon doorgeknipt, je ziet de ijzerdraadjes zitten.", "Mijn slot is vernield... het ligt nog bij de lantaarnpaal."],
-        diefstal: ["Ja, mijn witte Gazelle is gestolen! Hij is weg, foetsie.", "De dief heeft mijn fiets meegenomen terwijl ik sliep. Hij is echt gejat.", "Ze hebben mijn fiets meegenomen zonder te vragen. Dat is toch diefstal?"],
-        toestemming: ["Wat is dat nou voor een rare vraag?! Waarom zou ik iemand toestemming geven om mijn fiets mee te nemen?", "Natuurlijk heb ik geen toestemming gegeven! Het is MIJN fiets. Ze hebben hem gewoon gestolen."],
-        onzin: ["Ik begrijp niet wat dat met mijn fiets te maken heeft...", "Kunt u dat anders vragen? Ik ben een beetje van de kaart."]
-    };
+    const dash = document.getElementById('dash');
+    criteria.forEach(c => { dash.innerHTML += `<div class="point" id="${c.id}">${c.l}<span class="tip">${c.t}</span></div>`; });
 
+    let stress = 0; let qCount = 0;
+
+    // --- CHAT LOGICA ---
     function chatWithBot() {
         const input = document.getElementById('botInput');
-        const val = input.value.trim().toLowerCase();
-        if(!val) return;
+        const v = input.value.toLowerCase();
+        if(!v) return;
 
+        qCount++; stress = Math.min(qCount * 10, 100);
         addBubble(input.value, 'user-msg');
         input.value = '';
 
         setTimeout(() => {
-            let reply;
-            
-            // 1. Check op confrontatie na de 'blauwe' fout
-            if (heeftFoutGemaakt && (val.includes("blauw") || val.includes("wit") || val.includes("fout") || val.includes("eerst zei je") || val.includes("verkeerd"))) {
-                reply = responses.schrik;
-                heeftFoutGemaakt = false;
-            }
-            // 2. Toestemming logica (beledigd -> nadrukkelijk nee)
-            else if (val.includes("toestemming") || val.includes("mogen") || val.includes("goedvinden")) {
-                reply = (toestemmingStatus === 0) ? responses.toestemming[0] : responses.toestemming[1];
-                toestemmingStatus = 1;
-            }
-            // 3. Diefstal / Schade
-            else if (val.includes("gestolen") || val.includes("gejat") || val.includes("diefstal")) {
-                reply = responses.diefstal[state.diefstal % 3]; state.diefstal++;
-            }
-            else if (val.includes("slot") || val.includes("schade") || val.includes("kapot") || val.includes("cijferslot")) {
-                reply = responses.slot[state.slot % 3]; state.slot++;
-            }
-            // 4. Fiets info + Kans op tegenstrijdigheid
-            else if (val.includes("fiets") || val.includes("kleur") || val.includes("merk") || val.includes("gazelle")) {
-                if (!heeftFoutGemaakt && Math.random() > 0.7) {
-                    reply = responses.tegenstrijdig;
-                    heeftFoutGemaakt = true;
-                } else {
-                    reply = responses.fiets[state.fiets % 3]; state.fiets++;
-                }
-            }
-            // 5. Overige feiten
-            else if (val.includes("wie") || val.includes("naam") || val.includes("oud") || val.includes("geboren")) {
-                reply = responses.wie[state.wie % 3]; state.wie++;
-            } else if (val.includes("waar") || val.includes("adres") || val.includes("straat") || val.includes("vredenburg")) {
-                reply = responses.waar[state.waar % 3]; state.waar++;
-            } else if (val.includes("nacht") || val.includes("hoe laat") || val.includes("tijd") || val.includes("uur")) {
-                reply = responses.nacht[state.nacht % 3]; state.nacht++;
-            } 
-            // 6. Fallback (Meewerkend na 1 keer missen)
+            let r = "";
+            if (v.includes("sorry") || v.includes("rustig")) { qCount = Math.max(0, qCount - 5); r = "Dank u... ik ben gewoon erg gestrest."; }
+            else if (stress > 80) { r = "Ik heb het al gezegd! Een witte Gazelle! Luistert u wel?"; }
             else {
-                fallbackCount++;
-                if (fallbackCount >= 2) {
-                    reply = "Ik snap de vraag niet helemaal... maar mijn " + responses.fiets[state.fiets % 3];
-                    state.fiets++; fallbackCount = 0;
-                } else {
-                    reply = responses.onzin[Math.floor(Math.random() * responses.onzin.length)];
-                }
+                if(v.includes("achternaam")) r = "Mijn volledige naam is Evi de Vries.";
+                else if(v.includes("geboren")) r = "Ik ben van 4 november 2002.";
+                else if(v.includes("adres") || v.includes("woont")) r = "Ik woon aan de Vredenburg 24-B in Utrecht.";
+                else if(v.includes("slot")) r = "Mijn cijferslot is vernield, het ligt nog bij de lantaarnpaal.";
+                else if(v.includes("kost") || v.includes("waarde")) r = "De fiets was 650 euro waard.";
+                else r = "Het was een witte Gazelle Esprit. Ik hoorde vannacht rond 3 uur lawaai bij de deur.";
             }
-            addBubble(reply, 'bot');
-        }, 650);
+            addBubble(r, 'bot');
+            updateStressUI();
+        }, 600);
+    }
+
+    function updateStressUI() {
+        const meter = document.getElementById('stress-meter');
+        const txt = document.getElementById('stress-txt');
+        meter.style.width = (100 - stress) + "%";
+        if(stress > 70) { meter.style.background = "var(--danger)"; txt.innerText = "STATUS: GEÏRRITEERD"; }
+        else { meter.style.background = "var(--success)"; txt.innerText = "STATUS: MEEWERKEND"; }
     }
 
     function addBubble(text, side) {
         const div = document.createElement('div');
         div.className = `bubble ${side}`;
-        div.innerText = text;
-        const msgContainer = document.getElementById('messages');
-        msgContainer.appendChild(div);
-        msgContainer.scrollTop = msgContainer.scrollHeight;
+        div.innerHTML = text;
+        document.getElementById('messages').appendChild(div);
+        document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+    }
+
+    // --- ANALYSE & FIREBASE ---
+    function analyseerTekst() {
+        const txt = document.getElementById('pvInput').value.toLowerCase();
+        criteria.forEach(c => {
+            const el = document.getElementById(c.id);
+            if(c.w.some(word => txt.includes(word))) el.classList.add('met');
+            else el.classList.remove('met');
+        });
     }
 
     function submitToFirebase() {
@@ -183,27 +157,10 @@
         if(!tekst) return;
         db.ref('posts').push({ tekst: tekst, feedback: "", timestamp: new Date().toLocaleString() });
         document.getElementById('pvInput').value = '';
+        analyseerTekst();
     }
 
-    function addFeedback(id) {
-        const fb = document.getElementById('fb-in-'+id).value;
-        if(!fb) return;
-        db.ref('posts/' + id).update({ feedback: fb });
-    }
-
-    function clearAll() { if(confirm("Database wissen voor een nieuwe student?")) db.ref('posts').remove(); }
-
-    function downloadPDF() {
-        const element = document.getElementById('pdf-content');
-        const opt = {
-            margin: 10, filename: 'Aangifte_Evi_de_Vries.pdf',
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-        html2pdf().set(opt).from(element).save();
-    }
-
+    // --- FEEDBACK SYSTEEM (Hetzelfde als voorheen) ---
     db.ref('posts').on('value', (snap) => {
         const container = document.getElementById('feed-container');
         container.innerHTML = "<h3>ARCHIEF AANGIFTES</h3>";
@@ -215,17 +172,26 @@
                 div.className = 'feed-item';
                 div.innerHTML = `
                     <div style="font-size:0.7em; color:#888;">${item.timestamp}</div>
-                    <div class="pv-text">${item.tekst}</div>
-                    <div class="fb-section">Feedback: ${item.feedback || 'In afwachting van controle...'}</div>
+                    <div style="font-size:0.9em; border-bottom:1px solid #eee; padding-bottom:5px;">${item.tekst}</div>
+                    <div style="color:#d35400; font-size:0.8em; font-weight:bold; margin-top:5px;">Feedback: ${item.feedback || 'Nog geen feedback...'}</div>
                     <div style="display:flex; gap:5px; margin-top:5px;">
-                        <input type="text" id="fb-in-${id}" placeholder="Type feedback..." style="font-size:0.7em; flex:1; padding:4px;">
-                        <button onclick="addFeedback('${id}')" style="font-size:0.6em; background:#34495e;">OK</button>
-                    </div>
-                `;
+                        <input type="text" id="fb-in-${id}" placeholder="Type feedback..." style="font-size:0.7em; flex:1;">
+                        <button onclick="addFeedback('${id}')" style="font-size:0.6em; background:#34495e; color:white;">OK</button>
+                    </div>`;
                 container.appendChild(div);
             });
         }
     });
+
+    function addFeedback(id) {
+        const fb = document.getElementById('fb-in-' + id).value;
+        if(fb) db.ref('posts/' + id).update({ feedback: fb });
+    }
+
+    function downloadPDF() {
+        const element = document.getElementById('pdf-content');
+        html2pdf().from(element).save('Aangifte_Evi.pdf');
+    }
 </script>
 </body>
 </html>
