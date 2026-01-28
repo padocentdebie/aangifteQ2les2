@@ -94,16 +94,16 @@
     let stress = 15;
 
     const responses = {
-        hallo: ["Ik kom aangifte doen... mijn witte Gazelle is weg. Het slot ligt kapot op de grond.", "Heeft u tijd? Mijn fiets is gestolen bij mijn woning aan het Vredenburg.", "Goedendag. Ik ben nogal overstuur, mijn fiets is vannacht meegenomen."],
-        naam: ["Mijn naam is Evi de Vries.", "Ik ben Evi de Vries.", "Evi de Vries is de naam."],
-        datum: ["Ik ben geboren op 4 november 2002.", "4 november 2002 is mijn geboortedatum.", "Mijn geboortedatum is 04-11-2002."],
-        adres: ["Ik woon aan het Vredenburg 24-B in Utrecht.", "Dat is aan het Vredenburg, nummer 24-B.", "Mijn adres is Vredenburg 24-B."],
-        slot: ["Mijn ringslot ligt nu kapot op de straat.", "Ze hebben de ABUS-ketting gewoon doorgeknipt.", "Hij stond op slot met een ringslot en een dikke ketting, maar die zijn vernield."],
-        waarde: ["De fiets heeft 649 euro gekost.", "De waarde is 649 euro.", "Ik heb de bon nog, hij was 649 euro."],
-        tijd: ["Het gebeurde vannacht om 03:15 uur.", "Rond 03:15 uur schrok ik wakker van lawaai.", "Ik zag op de wekker dat het 03:15 uur was."],
-        kenmerken: ["Het is een witte Gazelle Esprit.", "Hij heeft een zwart rekje voorop en een madelief-sticker op de stang.", "Het model is een Gazelle Esprit, kleur wit."],
-        toestemming: ["Nee, natuurlijk heb ik geen toestemming gegeven!", "Meent u dat nu? Ik heb niemand recht gegeven om mijn fiets mee te nemen!", "Absoluut niet, het is diefstal."],
-        verward: ["Dat begrijp ik niet helemaal...", "Kunt u de vraag anders stellen?", "Ik weet het even niet meer, ik ben nogal geschrokken."]
+        hallo: ["Ik kom aangifte doen van diefstal van mijn fiets.", "Mijn witte Gazelle is gestolen, vreselijk dit!", "Ik wil melden dat mijn fiets vannacht is meegenomen."],
+        naam: ["Mijn naam is Evi de Vries.", "Ik heet Evi de Vries.", "Ik ben Evi de Vries, maar dat zag u vast al op mijn ID."],
+        datum: ["Ik ben geboren op 4 november 2002.", "Mijn geboortedatum is 04-11-2002.", "Dat is 4 november 2002, ik ben nog jong maar dit is echt een schok."],
+        adres: ["Ik woon aan het Vredenburg 24-B in Utrecht.", "Mijn adres is Vredenburg 24-B.", "Vredenburg 24-B, daar is het ook gebeurd."],
+        slot: ["Het ringslot ligt kapot op de grond.", "Ze hebben mijn ABUS-ketting gewoon doorgeknipt, die dieven!", "Het slot is volledig vernield achtergelaten."],
+        waarde: ["De fiets kostte 649 euro.", "Hij heeft een waarde van 649 euro.", "649 euro! Ik heb er zo lang voor gespaard..."],
+        tijd: ["Het gebeurde vannacht om 03:15 uur.", "Om 03:15 uur hoorde ik wat, toen moet het gebeurd zijn.", "Exact om 03:15 uur, ik keek direct op mijn wekker."],
+        kenmerken: ["Het is een witte Gazelle Esprit.", "Hij is wit en van het merk Gazelle.", "Een witte Gazelle Esprit met een madelief-sticker op de stang."],
+        toestemming: ["Nee, ik heb natuurlijk nooit toestemming gegeven!", "Echt niet! Wie doet zoiets zonder te vragen?", "Niemand mag zomaar aan mijn spullen komen, dus nee."],
+        verward: ["Kunt u ter zake komen? Ik ben emotioneel.", "Ik begrijp die vraag niet, ik wil gewoon mijn fiets terug!", "Wat bedoelt u daarmee? Laten we bij de feiten blijven."]
     };
 
     function getRandom(arr) {
@@ -122,27 +122,27 @@
             let r = "";
             let topic = "";
 
-            if (v.includes("hallo") || v.includes("morgen") || v.includes("middag") || v.includes("helpen")) topic = "hallo";
+            if (v.includes("hallo") || v.includes("morgen") || v.includes("middag") || v.includes("helpen") || v.includes("gebeurd")) topic = "hallo";
             else if (v.includes("naam") || v.includes("heet")) topic = "naam";
             else if (v.includes("datum") || v.includes("geboren") || v.includes("oud")) topic = "datum";
             else if (v.includes("adres") || v.includes("woon") || v.includes("plek")) topic = "adres";
             else if (v.includes("slot") || v.includes("kapot") || v.includes("ketting") || v.includes("vast")) topic = "slot";
             else if (v.includes("waarde") || v.includes("geld") || v.includes("kost") || v.includes("prijs")) topic = "waarde";
             else if (v.includes("tijd") || v.includes("uur") || v.includes("wanneer") || v.includes("laat")) topic = "tijd";
-            else if (v.includes("gazelle") || v.includes("wit") || v.includes("eruit") || v.includes("kenmerk") || v.includes("sticker")) topic = "kenmerken";
-            else if (v.includes("toestemming") || v.includes("toegestaan") || v.includes("gegeven")) topic = "toestemming";
+            else if (v.includes("gazelle") || v.includes("wit") || v.includes("eruit") || v.includes("kenmerk") || v.includes("sticker") || v.includes("kleur")) topic = "kenmerken";
+            else if (v.includes("toestemming") || v.includes("toegestaan") || v.includes("gegeven") || v.includes("recht")) topic = "toestemming";
 
             if(topic) {
                 r = getRandom(responses[topic]);
                 stress += 2;
             } else {
                 r = getRandom(responses.verward);
-                stress += 4;
+                stress += 5;
             }
 
             addBubble(r, 'bot');
             updateStressUI();
-        }, 600);
+        }, 500);
     }
 
     function checkPV() {
@@ -164,7 +164,7 @@
     function updateStressUI() {
         const meter = document.getElementById('stress-meter');
         meter.style.width = Math.max(0, (100 - stress)) + "%";
-        if(stress > 70) meter.style.background = "var(--danger)";
+        if(stress > 75) meter.style.background = "var(--danger)";
     }
 
     function addBubble(text, side) {
