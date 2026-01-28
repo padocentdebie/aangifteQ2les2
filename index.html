@@ -24,7 +24,7 @@
         .bot { align-self: flex-start; background: #e8e8e8; color: #2c3e50; border-bottom-left-radius: 2px; }
         .user-msg { align-self: flex-end; background: var(--police); color: white; border-bottom-right-radius: 2px; }
         
-        textarea { width: 100%; min-height: 150px; border: 2px solid var(--police); padding: 10px; border-radius: 4px; resize: none; font-size: 1em; margin-bottom: 10px; }
+        textarea { width: 100%; min-height: 180px; border: 2px solid var(--police); padding: 10px; border-radius: 4px; resize: none; font-size: 1em; margin-bottom: 10px; }
         
         #check-section { margin-top: 15px; padding: 15px; background: #f9f9f9; border-radius: 8px; border-left: 5px solid var(--police); }
         .check-item { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; font-size: 0.85em; }
@@ -32,15 +32,14 @@
         .dot-green { background: var(--success); }
         .dot-red { background: var(--danger); }
 
-        .feed-item { background: #f9f9f9; border: 1px solid #ddd; padding: 12px; margin-top: 15px; border-radius: 8px; }
-        button { background: var(--police); color: white; border: none; padding: 10px; cursor: pointer; font-weight: bold; border-radius: 4px; transition: 0.3s; }
-        button:hover { opacity: 0.8; }
+        .feed-item { background: #f9f9f9; border: 1px solid #ddd; padding: 12px; margin-top: 15px; border-radius: 8px; position: relative; }
+        button { background: var(--police); color: white; border: none; padding: 10px; cursor: pointer; font-weight: bold; border-radius: 4px; transition: 0.2s; }
+        button:hover { opacity: 0.9; }
         .btn-pv { background: var(--success); width: 100%; margin: 10px 0; font-size: 1.1em; }
         .btn-download { background: #e67e22; width: 100%; margin-top: 10px; }
         .btn-clear { background: #95a5a6; font-size: 0.7em; margin-top: 15px; width: 100%; }
         
-        /* PDF specifieke styling: verberg knoppen tijdens download */
-        @media print { .no-print { display: none; } }
+        @media print { .no-print { display: none !important; } }
     </style>
 </head>
 <body>
@@ -53,10 +52,10 @@
         </div>
         <div id="stress-meter"></div>
         <div id="messages">
-            <div class="bubble bot"><b>Evi:</b> Goedemorgen. Ik kom aangifte doen van de diefstal van mijn fiets...</div>
+            <div class="bubble bot"><b>Evi:</b> Goedemorgen. Ik kom aangifte doen... mijn witte Gazelle is weg.</div>
         </div>
         <div style="padding:15px; background:white; display:flex; gap:10px; border-top:1px solid #eee;">
-            <input type="text" id="botInput" style="flex:1; padding:10px; border:1px solid #ccc;" placeholder="Stel een vraag..." onkeypress="if(event.key==='Enter') chatWithBot()">
+            <input type="text" id="botInput" style="flex:1; padding:10px; border:1px solid #ccc;" placeholder="Stel een vraag aan Evi..." onkeypress="if(event.key==='Enter') chatWithBot()">
             <button onclick="chatWithBot()">VRAAG</button>
         </div>
     </div>
@@ -66,13 +65,13 @@
             <h2 style="color:var(--police); margin:0 0 10px 0;">Proces-Verbaal van Aangifte</h2>
             <p style="font-size: 0.8em; color: #666; margin-bottom: 10px;">Slachtoffer: E. de Vries</p>
             
-            <textarea id="pvInput" placeholder="Typ hier de officiële verklaring..." oninput="checkPV()"></textarea>
+            <textarea id="pvInput" placeholder="Stel hier de officiële aangifte op in de ik-vorm..." oninput="checkPV()"></textarea>
             
             <div id="check-section" class="no-print">
-                <b style="font-size: 0.9em; color: var(--police);">Controleer PV vereisten:</b>
+                <b style="font-size: 0.9em; color: var(--police);">PV Aangifte Check:</b>
                 <div class="check-item"><div id="c1" class="status-dot"></div><span>Geen toestemming</span></div>
                 <div class="check-item"><div id="c2" class="status-dot"></div><span>Vernieling</span></div>
-                <div class="check-item"><div id="c3" class="status-dot"></div><span>Signalement & Waarde</span></div>
+                <div class="check-item"><div id="c3" class="status-dot"></div><span>Omschrijving</span></div>
                 <div class="check-item"><div id="c4" class="status-dot"></div><span>Ik-vorm</span></div>
                 <div class="check-item"><div id="c5" class="status-dot"></div><span>Gouden W's</span></div>
                 <div class="check-item"><div id="c6" class="status-dot"></div><span>Redenen van wetenschap</span></div>
@@ -81,7 +80,7 @@
             <div id="feed-container"></div>
         </div>
 
-        <button class="btn-pv no-print" onclick="submitToFirebase()">VERKLARING OPSLAAN</button>
+        <button class="btn-pv no-print" onclick="submitToFirebase()">OPSLAAN IN ARCHIEF</button>
         <button class="btn-download no-print" onclick="downloadPDF()">DOWNLOAD PDF</button>
         <button class="btn-clear no-print" onclick="clearDatabase()">WIS ARCHIEF</button>
     </div>
@@ -95,16 +94,16 @@
     let stress = 15;
 
     const responses = {
-        hallo: ["Ik kom aangifte doen... mijn witte Gazelle is weg.", "Heeft u tijd? Mijn fiets is gestolen bij het Vredenburg.", "Goedendag. Ik ben nogal overstuur, mijn fiets is vannacht meegenomen."],
-        naam: ["Mijn naam is Evi de Vries.", "Ik heet Evi de Vries.", "Evi de Vries is de naam."],
-        datum: ["Ik ben geboren op 4 november 2002.", "4 november 2002 is mijn geboortedatum.", "Dat is 04-11-2002."],
-        adres: ["Ik woon aan het Vredenburg 24-B in Utrecht.", "Mijn adres is Vredenburg 24-B.", "Vredenburg 24-B, daar woon ik."],
-        slot: ["Mijn ringslot ligt nu kapot op de straat.", "De ketting is doorgeknipt, dat zag ik meteen.", "Hij stond dubbel op slot, maar het ringslot is geforceerd."],
-        waarde: ["Mijn fiets kost 649 euro.", "De nieuwwaarde was 649 euro.", "Ik heb er 649 euro voor betaald."],
-        tijd: ["Het gebeurde vannacht om 03:15 uur.", "Rond 03:15 uur schrok ik wakker van een geluid.", "Ik keek op de klok en het was 03:15 uur."],
-        kenmerken: ["Het is een witte Gazelle Esprit.", "Er zit een zwart rekje voorop en een madelief-sticker op de stang.", "Een witte damesfiets, merk Gazelle, model Esprit."],
-        toestemming: ["Nee, natuurlijk heb ik geen toestemming gegeven!", "Meent u dat nou? Ik zou nooit toestemming geven mijn slot te vernielen!", "Zonder mijn toestemming hebben ze die fiets meegenomen."],
-        verward: ["Dat begrijp ik even niet...", "Kunt u dat anders vragen?", "Ik weet het niet meer, ik ben zo in de war door de diefstal."]
+        hallo: ["Ik kom aangifte doen... mijn witte Gazelle is weg. Het slot ligt kapot op de grond.", "Goedemorgen. Er is een fiets gestolen bij mijn huis.", "Hallo. Ik wil graag een diefstal melden."],
+        naam: ["Mijn volledige naam is Evi de Vries.", "Ik ben Evi de Vries.", "Gewoon Evi de Vries."],
+        datum: ["Ik ben geboren op 4 november 2002.", "Dat is 4 november 2002.", "Mijn geboortedatum is 04-11-2002."],
+        adres: ["Ik woon aan het Vredenburg 24-B in Utrecht.", "Dat is aan het Vredenburg, nummer 24-B.", "Mijn adres is Vredenburg 24-B."],
+        slot: ["Mijn ringslot ligt nu kapot op de straat.", "Ze hebben de ABUS-ketting gewoon doorgeknipt.", "Hij stond op slot met een ringslot en een dikke ketting, maar die zijn vernield."],
+        waarde: ["De fiets heeft 649 euro gekost.", "De waarde is 649 euro.", "Ik heb de bon nog, hij was 649 euro."],
+        tijd: ["Het gebeurde vannacht om 03:15 uur.", "Rond 03:15 uur schrok ik wakker van lawaai.", "Ik zag op de wekker dat het 03:15 uur was."],
+        kenmerken: ["Het is een witte Gazelle Esprit.", "Hij heeft een zwart rekje voorop en een madelief-sticker op de stang.", "Het model is een Gazelle Esprit, kleur wit."],
+        toestemming: ["Nee, natuurlijk heb ik geen toestemming gegeven!", "Meent u dat nou? Ik heb niemand recht gegeven om mijn fiets mee te nemen!", "Absoluut niet, het is diefstal."],
+        verward: ["Dat begrijp ik niet helemaal...", "Kunt u de vraag anders stellen?", "Ik weet het even niet meer, ik ben nogal geschrokken."]
     };
 
     function getRandom(arr) {
@@ -123,22 +122,22 @@
             let r = "";
             let topic = "";
 
-            if (v.includes("hallo") || v.includes("middag") || v.includes("morgen") || v.includes("helpen")) topic = "hallo";
+            if (v.includes("hallo") || v.includes("morgen") || v.includes("middag") || v.includes("helpen")) topic = "hallo";
             else if (v.includes("naam") || v.includes("heet")) topic = "naam";
-            else if (v.includes("datum") || v.includes("geboren")) topic = "datum";
-            else if (v.includes("adres") || v.includes("woon")) topic = "adres";
-            else if (v.includes("slot") || v.includes("kapot") || v.includes("ketting")) topic = "slot";
-            else if (v.includes("waarde") || v.includes("geld") || v.includes("kost")) topic = "waarde";
-            else if (v.includes("tijd") || v.includes("uur") || v.includes("wanneer")) topic = "tijd";
-            else if (v.includes("gazelle") || v.includes("wit") || v.includes("eruit") || v.includes("sticker")) topic = "kenmerken";
-            else if (v.includes("toestemming") || v.includes("gegeven")) topic = "toestemming";
+            else if (v.includes("datum") || v.includes("geboren") || v.includes("oud")) topic = "datum";
+            else if (v.includes("adres") || v.includes("woon") || v.includes("plek")) topic = "adres";
+            else if (v.includes("slot") || v.includes("kapot") || v.includes("ketting") || v.includes("vast")) topic = "slot";
+            else if (v.includes("waarde") || v.includes("geld") || v.includes("kost") || v.includes("prijs")) topic = "waarde";
+            else if (v.includes("tijd") || v.includes("uur") || v.includes("wanneer") || v.includes("laat")) topic = "tijd";
+            else if (v.includes("gazelle") || v.includes("wit") || v.includes("eruit") || v.includes("kenmerk") || v.includes("sticker")) topic = "kenmerken";
+            else if (v.includes("toestemming") || v.includes("toegestaan") || v.includes("gegeven")) topic = "toestemming";
 
             if(topic) {
                 r = getRandom(responses[topic]);
                 stress += 2;
             } else {
                 r = getRandom(responses.verward);
-                stress += 5;
+                stress += 4;
             }
 
             addBubble(r, 'bot');
@@ -165,8 +164,7 @@
     function updateStressUI() {
         const meter = document.getElementById('stress-meter');
         meter.style.width = Math.max(0, (100 - stress)) + "%";
-        if(stress > 60) meter.style.background = "var(--danger)";
-        else if(stress > 30) meter.style.background = "var(--warning)";
+        if(stress > 70) meter.style.background = "var(--danger)";
     }
 
     function addBubble(text, side) {
@@ -180,16 +178,16 @@
 
     function submitToFirebase() {
         const txt = document.getElementById('pvInput').value.trim();
-        if(!txt) { alert("Vul eerst de verklaring in."); return; }
+        if(!txt) return;
         db.ref('posts').push({ tekst: txt, timestamp: new Date().toLocaleString() });
         document.getElementById('pvInput').value = '';
         checkPV();
-        alert("Opgeslagen in het archief.");
+        alert("Opgeslagen in archief!");
     }
 
     db.ref('posts').on('value', (snap) => {
         const container = document.getElementById('feed-container');
-        container.innerHTML = "<h3 class='no-print' style='margin-top:30px; border-top:1px solid #ccc; pt-10px;'>ARCHIEF VERKLARINGEN</h3>";
+        container.innerHTML = "<h3 class='no-print' style='margin-top:20px;'>ARCHIEF</h3>";
         const data = snap.val();
         if(data) {
             Object.keys(data).reverse().forEach(id => {
@@ -206,7 +204,7 @@
         const element = document.getElementById('pdf-content');
         const opt = {
             margin: 10,
-            filename: 'Aangifte_Evi_de_Vries.pdf',
+            filename: 'PV_Aangifte_Evi.pdf',
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 2 },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
@@ -215,7 +213,7 @@
     }
 
     function clearDatabase() { 
-        if(confirm("Weet je zeker dat je het hele archief wilt wissen?")) {
+        if(confirm("Weet je zeker dat je het volledige archief wilt wissen?")) {
             db.ref('posts').remove(); 
         }
     }
