@@ -26,7 +26,6 @@
         
         textarea { width: 100%; min-height: 150px; border: 2px solid var(--police); padding: 10px; border-radius: 4px; resize: none; font-size: 1em; }
         
-        /* Checkbox Styling */
         #check-section { margin-top: 15px; padding: 15px; background: #f9f9f9; border-radius: 8px; border-left: 5px solid var(--police); }
         .check-item { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; font-size: 0.85em; }
         .status-dot { width: 10px; height: 10px; border-radius: 50%; background: #ccc; }
@@ -49,7 +48,7 @@
         </div>
         <div id="stress-meter"></div>
         <div id="messages">
-            <div class="bubble bot"><b>Evi:</b> (snikt) Hallo... ik ben Evi. Mijn witte fiets is weg... iemand neemt hem zomaar mee bij het Vredenburg. Ik voel me zo rot... kunt u helpen?</div>
+            <div class="bubble bot"><b>Evi:</b> Goedemiddag... ik kom aangifte doen van de diefstal van mijn witte Gazelle fiets. Mijn slot ligt kapot op de grond bij het Vredenburg... (snikt).</div>
         </div>
         <div style="padding:15px; background:white; display:flex; gap:10px; border-top:1px solid #eee;">
             <input type="text" id="botInput" style="flex:1; padding:10px; border:1px solid #ccc;" placeholder="Stel een vraag..." onkeypress="if(event.key==='Enter') chatWithBot()">
@@ -93,12 +92,12 @@
 
     const responses = {
         naam: ["Mijn naam is Evi de Vries.", "Ik heet Evi de Vries.", "Evi de Vries is mijn volledige naam."],
-        datum: ["Ik ben geboren op 4 november 2002.", "4 november 2002. Ik ben 23 jaar."],
+        datum: ["Ik ben geboren op 4 november 2002. Ik ben dus 23 jaar.", "Mijn geboortedatum is 4 november 2002."],
         adres: ["Ik woon aan het Vredenburg 24-B in Utrecht.", "Mijn adres is Vredenburg 24-B."],
-        slot: ["Mijn ringslot ligt nu kapot op de straat.", "De ABUS-ketting is helemaal weg.", "Hij staat op slot met een ringslot en een dikke ketting."],
+        slot: ["Mijn ringslot ligt nu kapot op de straat.", "De ABUS-ketting is helemaal weg.", "Ik heb een ringslot en een dikke ketting. Ik ben altijd voorzichtig."],
         waarde: ["Mijn fiets kost 649 euro.", "De waarde is 649 euro.", "Hij is 649 euro waard."],
         tijd: ["Het is vannacht om 03:15 uur.", "Rond 03:15 uur vannacht schrik ik wakker."],
-        kenmerken: ["Het is een witte Gazelle Esprit.", "Er zit een zwart rekje voorop.", "Ik herken hem aan de madelief-sticker op de stang."],
+        kenmerken: ["Het is een witte Gazelle Esprit.", "Er zit een zwart rekje voorop mijn fiets.", "Ik herken hem aan de madelief-sticker op de stang."],
         toestemming: ["Ik geef toch geen toestemming?", "Nee, natuurlijk geef ik geen toestemming om mijn spullen te stelen of kapot te maken!"],
         verward: ["Ik weet het even niet meer...", "Ik ben zo in de war."]
     };
@@ -132,22 +131,15 @@
     function checkPV() {
         const t = document.getElementById('pvInput').value;
         const lowT = t.toLowerCase();
-
         const updateDot = (id, condition) => {
             document.getElementById(id).className = condition ? "status-dot dot-green" : "status-dot dot-red";
         };
 
-        // 1. Geen toestemming
         updateDot("c1", lowT.includes("geen toestemming") || lowT.includes("zonder mijn toestemming") || lowT.includes("niet toegestaan"));
-        // 2. Vernieling
         updateDot("c2", lowT.includes("verniel") || lowT.includes("kapot") || lowT.includes("verbroken") || lowT.includes("geforceerd"));
-        // 3. Schade omschrijving
         updateDot("c3", lowT.includes("wit") && lowT.includes("gazelle") && (lowT.includes("649") || lowT.includes("esprit")));
-        // 4. Ik-vorm
         updateDot("c4", t.includes("Ik ") || t.includes("ik "));
-        // 5. Gouden W's
         updateDot("c5", lowT.includes("vredenburg") && lowT.includes("4 november") && lowT.includes("2002") && lowT.includes("rekje"));
-        // 6. Redenen van wetenschap
         const redenRegex = /(ik|aangeefster)\s+(verklaar|zag|hoorde|bevestig|merkte)\s+dat/i;
         updateDot("c6", redenRegex.test(lowT));
     }
@@ -171,7 +163,7 @@
         if(!txt) return;
         db.ref('posts').push({ tekst: txt, feedback: "", timestamp: new Date().toLocaleString() });
         document.getElementById('pvInput').value = '';
-        checkPV(); // Reset dots
+        checkPV();
     }
 
     db.ref('posts').on('value', (snap) => {
