@@ -75,6 +75,7 @@
                 <div class="check-item"><div id="c4" class="status-dot"></div><span>Ik-vorm</span></div>
                 <div class="check-item"><div id="c5" class="status-dot"></div><span>Gouden W's</span></div>
                 <div class="check-item"><div id="c6" class="status-dot"></div><span>Redenen van wetenschap</span></div>
+                <div class="check-item"><div id="c7" class="status-dot"></div><span>OVT & Actieve vormen</span></div>
             </div>
 
             <div id="feed-container"></div>
@@ -157,8 +158,13 @@
         updateDot("c3", lowT.includes("wit") && lowT.includes("gazelle") && lowT.includes("649"));
         updateDot("c4", t.includes("Ik ") || t.includes("ik "));
         updateDot("c5", lowT.includes("vredenburg") && lowT.includes("4 november") && lowT.includes("2002"));
+        
         const redenRegex = /(ik|aangeefster)\s+(verklaar|zag|hoorde|bevestig|merkte)\s+dat/i;
         updateDot("c6", redenRegex.test(lowT));
+
+        // Check voor OVT & Actieve vormen
+        const ovtRegex = /\b(verklaarde|zag|hoorde|stond|bevond|nam|verliet|bevestigde|ontdekte|merkte|keek)\b|(\w+(de|te|den|ten)\b)/i;
+        updateDot("c7", ovtRegex.test(lowT));
     }
 
     function updateStressUI() {
