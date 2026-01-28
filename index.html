@@ -24,7 +24,7 @@
         .bot { align-self: flex-start; background: #e8e8e8; color: #2c3e50; border-bottom-left-radius: 2px; }
         .user-msg { align-self: flex-end; background: var(--police); color: white; border-bottom-right-radius: 2px; }
         
-        textarea { width: 100%; min-height: 150px; border: 2px solid var(--police); padding: 10px; border-radius: 4px; resize: none; font-size: 1em; }
+        textarea { width: 100%; min-height: 150px; border: 2px solid var(--police); padding: 10px; border-radius: 4px; resize: none; font-size: 1em; margin-bottom: 10px; }
         
         #check-section { margin-top: 15px; padding: 15px; background: #f9f9f9; border-radius: 8px; border-left: 5px solid var(--police); }
         .check-item { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; font-size: 0.85em; }
@@ -33,9 +33,14 @@
         .dot-red { background: var(--danger); }
 
         .feed-item { background: #f9f9f9; border: 1px solid #ddd; padding: 12px; margin-top: 15px; border-radius: 8px; }
-        button { background: var(--police); color: white; border: none; padding: 10px; cursor: pointer; font-weight: bold; border-radius: 4px; }
+        button { background: var(--police); color: white; border: none; padding: 10px; cursor: pointer; font-weight: bold; border-radius: 4px; transition: 0.3s; }
+        button:hover { opacity: 0.8; }
         .btn-pv { background: var(--success); width: 100%; margin: 10px 0; font-size: 1.1em; }
         .btn-download { background: #e67e22; width: 100%; margin-top: 10px; }
+        .btn-clear { background: #95a5a6; font-size: 0.7em; margin-top: 15px; width: 100%; }
+        
+        /* PDF specifieke styling: verberg knoppen tijdens download */
+        @media print { .no-print { display: none; } }
     </style>
 </head>
 <body>
@@ -48,87 +53,97 @@
         </div>
         <div id="stress-meter"></div>
         <div id="messages">
-            <div class="bubble bot"><b>Evi:</b> Goedemorgen.</div>
+            <div class="bubble bot"><b>Evi:</b> Goedemorgen. Ik kom aangifte doen van de diefstal van mijn fiets...</div>
         </div>
         <div style="padding:15px; background:white; display:flex; gap:10px; border-top:1px solid #eee;">
-            <input type="text" id="botInput" style="flex:1; padding:10px; border:1px solid #ccc;" placeholder="Begin het gesprek..." onkeypress="if(event.key==='Enter') chatWithBot()">
+            <input type="text" id="botInput" style="flex:1; padding:10px; border:1px solid #ccc;" placeholder="Stel een vraag..." onkeypress="if(event.key==='Enter') chatWithBot()">
             <button onclick="chatWithBot()">VRAAG</button>
         </div>
     </div>
 
     <div id="aangifte-section">
         <div id="pdf-content">
-            <h2 style="color:var(--police); margin:0 0 10px 0;">Q2les Aangifte</h2>
+            <h2 style="color:var(--police); margin:0 0 10px 0;">Proces-Verbaal van Aangifte</h2>
             <p style="font-size: 0.8em; color: #666; margin-bottom: 10px;">Slachtoffer: E. de Vries</p>
             
-            <textarea id="pvInput" placeholder="Stel hier de officiële aangifte op..." oninput="checkPV()"></textarea>
+            <textarea id="pvInput" placeholder="Typ hier de officiële verklaring..." oninput="checkPV()"></textarea>
             
-            <div id="check-section">
-                <b style="font-size: 0.9em; color: var(--police);">PV Aangifte Check:</b>
+            <div id="check-section" class="no-print">
+                <b style="font-size: 0.9em; color: var(--police);">Controleer PV vereisten:</b>
                 <div class="check-item"><div id="c1" class="status-dot"></div><span>Geen toestemming</span></div>
-                <div class="check-item"><div id="c2" class="status-dot"></div><span>Vernieling (slot)</span></div>
-                <div class="check-item"><div id="c3" class="status-dot"></div><span>Omschrijving (Wit, Gazelle, 649,-)</span></div>
+                <div class="check-item"><div id="c2" class="status-dot"></div><span>Vernieling</span></div>
+                <div class="check-item"><div id="c3" class="status-dot"></div><span>Signalement & Waarde</span></div>
                 <div class="check-item"><div id="c4" class="status-dot"></div><span>Ik-vorm</span></div>
-                <div class="check-item"><div id="c5" class="status-dot"></div><span>Gouden W's (Adres, Geb. datum)</span></div>
-                <div class="check-item"><div id="c6" class="status-dot"></div><span>Redenen van wetenschap ("...dat")</span></div>
+                <div class="check-item"><div id="c5" class="status-dot"></div><span>Gouden W's</span></div>
+                <div class="check-item"><div id="c6" class="status-dot"></div><span>Redenen van wetenschap</span></div>
             </div>
 
-            <button class="btn-pv" onclick="submitToFirebase()">OPSLAAN</button>
             <div id="feed-container"></div>
         </div>
-        <button class="btn-download" onclick="downloadPDF()">DOWNLOAD PDF</button>
-        <button onclick="clearDatabase()" style="background:#95a5a6; font-size:0.7em; margin-top:15px; width:100%; border:none; color:white; padding:5px; cursor:pointer;">WIS ARCHIEF</button>
+
+        <button class="btn-pv no-print" onclick="submitToFirebase()">VERKLARING OPSLAAN</button>
+        <button class="btn-download no-print" onclick="downloadPDF()">DOWNLOAD PDF</button>
+        <button class="btn-clear no-print" onclick="clearDatabase()">WIS ARCHIEF</button>
     </div>
 </div>
 
 <script>
-    // Firebase configuratie (ongewijzigd)
     const firebaseConfig = { apiKey: "AIzaSyC-Of0AUOd-kVo2RKxYc-68Gr-RO4HdRk0", authDomain: "q2aangifteles2.firebaseapp.com", databaseURL: "https://q2aangifteles2-default-rtdb.europe-west1.firebasedatabase.app", projectId: "q2aangifteles2" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
     let stress = 15;
-    let lastTopic = "";
-    let pCount = 0;
 
     const responses = {
-        hallo: ["Ik kom aangifte doen... mijn witte Gazelle is weg. Het slot ligt kapot op de grond bij het Vredenburg."],
-        naam: ["Mijn naam is Evi de Vries.", "Ik heet Evi de Vries."],
-        datum: ["Ik ben geboren op 4 november 2002.", "4 november 2002."],
-        adres: ["Ik woon aan het Vredenburg 24-B in Utrecht."],
-        slot: ["Mijn ringslot ligt nu kapot op de straat.", "De ABUS-ketting is helemaal weg.", "Hij staat op slot met een ringslot en een dikke ketting."],
-        waarde: ["Mijn fiets kost 649 euro.", "De waarde is 649 euro."],
-        tijd: ["Het is vannacht om 03:15 uur.", "Rond 03:15 uur vannacht schrik ik wakker."],
-        kenmerken: ["Het is een witte Gazelle Esprit.", "Er zit een zwart rekje voorop mijn fiets.", "Ik herken hem aan de madelief-sticker op de stang."],
-        toestemming: ["Toestemming? Meent u dat nu?", "Nee, natuurlijk geef ik geen toestemming om mijn spullen te mollen!"],
-        verward: ["Ik weet het niet meer...", "Ik ben zo in de war."]
+        hallo: ["Ik kom aangifte doen... mijn witte Gazelle is weg.", "Heeft u tijd? Mijn fiets is gestolen bij het Vredenburg.", "Goedendag. Ik ben nogal overstuur, mijn fiets is vannacht meegenomen."],
+        naam: ["Mijn naam is Evi de Vries.", "Ik heet Evi de Vries.", "Evi de Vries is de naam."],
+        datum: ["Ik ben geboren op 4 november 2002.", "4 november 2002 is mijn geboortedatum.", "Dat is 04-11-2002."],
+        adres: ["Ik woon aan het Vredenburg 24-B in Utrecht.", "Mijn adres is Vredenburg 24-B.", "Vredenburg 24-B, daar woon ik."],
+        slot: ["Mijn ringslot ligt nu kapot op de straat.", "De ketting is doorgeknipt, dat zag ik meteen.", "Hij stond dubbel op slot, maar het ringslot is geforceerd."],
+        waarde: ["Mijn fiets kost 649 euro.", "De nieuwwaarde was 649 euro.", "Ik heb er 649 euro voor betaald."],
+        tijd: ["Het gebeurde vannacht om 03:15 uur.", "Rond 03:15 uur schrok ik wakker van een geluid.", "Ik keek op de klok en het was 03:15 uur."],
+        kenmerken: ["Het is een witte Gazelle Esprit.", "Er zit een zwart rekje voorop en een madelief-sticker op de stang.", "Een witte damesfiets, merk Gazelle, model Esprit."],
+        toestemming: ["Nee, natuurlijk heb ik geen toestemming gegeven!", "Meent u dat nou? Ik zou nooit toestemming geven mijn slot te vernielen!", "Zonder mijn toestemming hebben ze die fiets meegenomen."],
+        verward: ["Dat begrijp ik even niet...", "Kunt u dat anders vragen?", "Ik weet het niet meer, ik ben zo in de war door de diefstal."]
     };
+
+    function getRandom(arr) {
+        return arr[Math.floor(Math.random() * arr.length)];
+    }
 
     function chatWithBot() {
         const input = document.getElementById('botInput');
         const v = input.value.toLowerCase();
         if(!v) return;
+        
         addBubble(input.value, 'user-msg');
         input.value = '';
+
         setTimeout(() => {
-            let r = ""; let topic = "";
+            let r = "";
+            let topic = "";
+
             if (v.includes("hallo") || v.includes("middag") || v.includes("morgen") || v.includes("helpen")) topic = "hallo";
-            else if (v.includes("naam")) topic = "naam";
+            else if (v.includes("naam") || v.includes("heet")) topic = "naam";
             else if (v.includes("datum") || v.includes("geboren")) topic = "datum";
             else if (v.includes("adres") || v.includes("woon")) topic = "adres";
-            else if (v.includes("slot") || v.includes("kapot")) topic = "slot";
-            else if (v.includes("waarde") || v.includes("geld")) topic = "waarde";
-            else if (v.includes("tijd") || v.includes("uur")) topic = "tijd";
-            else if (v.includes("gazelle") || v.includes("wit")) topic = "kenmerken";
-            else if (v.includes("toestemming") || v.includes("gegeven")) { pCount++; r = (pCount === 1) ? responses.toestemming[0] : responses.toestemming[1]; stress += 8; }
-            
-            if(!r) {
-                if(topic) { r = responses[topic][0]; lastTopic = topic; stress += 2; }
-                else { r = responses.verward[0]; stress += 5; }
+            else if (v.includes("slot") || v.includes("kapot") || v.includes("ketting")) topic = "slot";
+            else if (v.includes("waarde") || v.includes("geld") || v.includes("kost")) topic = "waarde";
+            else if (v.includes("tijd") || v.includes("uur") || v.includes("wanneer")) topic = "tijd";
+            else if (v.includes("gazelle") || v.includes("wit") || v.includes("eruit") || v.includes("sticker")) topic = "kenmerken";
+            else if (v.includes("toestemming") || v.includes("gegeven")) topic = "toestemming";
+
+            if(topic) {
+                r = getRandom(responses[topic]);
+                stress += 2;
+            } else {
+                r = getRandom(responses.verward);
+                stress += 5;
             }
+
             addBubble(r, 'bot');
             updateStressUI();
-        }, 700);
+        }, 600);
     }
 
     function checkPV() {
@@ -139,7 +154,7 @@
         };
 
         updateDot("c1", lowT.includes("geen toestemming") || lowT.includes("zonder mijn toestemming"));
-        updateDot("c2", lowT.includes("verniel") || lowT.includes("kapot") || lowT.includes("verbroken"));
+        updateDot("c2", lowT.includes("verniel") || lowT.includes("kapot") || lowT.includes("verbroken") || lowT.includes("geforceerd"));
         updateDot("c3", lowT.includes("wit") && lowT.includes("gazelle") && lowT.includes("649"));
         updateDot("c4", t.includes("Ik ") || t.includes("ik "));
         updateDot("c5", lowT.includes("vredenburg") && lowT.includes("4 november") && lowT.includes("2002"));
@@ -149,13 +164,15 @@
 
     function updateStressUI() {
         const meter = document.getElementById('stress-meter');
-        meter.style.width = (100 - Math.min(stress, 100)) + "%";
+        meter.style.width = Math.max(0, (100 - stress)) + "%";
+        if(stress > 60) meter.style.background = "var(--danger)";
+        else if(stress > 30) meter.style.background = "var(--warning)";
     }
 
     function addBubble(text, side) {
         const div = document.createElement('div');
         div.className = `bubble ${side}`;
-        div.innerText = text;
+        div.innerHTML = side === 'bot' ? `<b>Evi:</b> ${text}` : text;
         const m = document.getElementById('messages');
         m.appendChild(div);
         m.scrollTop = m.scrollHeight;
@@ -163,15 +180,16 @@
 
     function submitToFirebase() {
         const txt = document.getElementById('pvInput').value.trim();
-        if(!txt) return;
+        if(!txt) { alert("Vul eerst de verklaring in."); return; }
         db.ref('posts').push({ tekst: txt, timestamp: new Date().toLocaleString() });
         document.getElementById('pvInput').value = '';
         checkPV();
+        alert("Opgeslagen in het archief.");
     }
 
     db.ref('posts').on('value', (snap) => {
         const container = document.getElementById('feed-container');
-        container.innerHTML = "<h3>ARCHIEF</h3>";
+        container.innerHTML = "<h3 class='no-print' style='margin-top:30px; border-top:1px solid #ccc; pt-10px;'>ARCHIEF VERKLARINGEN</h3>";
         const data = snap.val();
         if(data) {
             Object.keys(data).reverse().forEach(id => {
@@ -185,10 +203,22 @@
     });
 
     function downloadPDF() {
-        html2pdf().from(document.getElementById('pdf-content')).save('Q2les_Aangifte.pdf');
+        const element = document.getElementById('pdf-content');
+        const opt = {
+            margin: 10,
+            filename: 'Aangifte_Evi_de_Vries.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        html2pdf().set(opt).from(element).save();
     }
 
-    function clearDatabase() { if(confirm("Archief wissen?")) db.ref('posts').remove(); }
+    function clearDatabase() { 
+        if(confirm("Weet je zeker dat je het hele archief wilt wissen?")) {
+            db.ref('posts').remove(); 
+        }
+    }
 </script>
 </body>
 </html>
