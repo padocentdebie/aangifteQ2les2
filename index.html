@@ -2,7 +2,7 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <title>Q2les Aangifte - Evi de Vries</title>
+    <title>Q2les 2 Aangifte - Evi de Vries</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -52,7 +52,7 @@
         </div>
         <div id="stress-meter"></div>
         <div id="messages">
-            <div class="bubble bot"><b>Evi:</b> Goedemorgen. Ik kom aangifte doen... mijn witte Gazelle is weg.</div>
+            <div class="bubble bot"><b>Evi:</b> Goedemorgen.</div>
         </div>
         <div style="padding:15px; background:white; display:flex; gap:10px; border-top:1px solid #eee;">
             <input type="text" id="botInput" style="flex:1; padding:10px; border:1px solid #ccc;" placeholder="Stel een vraag aan Evi..." onkeypress="if(event.key==='Enter') chatWithBot()">
@@ -62,7 +62,7 @@
 
     <div id="aangifte-section">
         <div id="pdf-content">
-            <h2 style="color:var(--police); margin:0 0 10px 0;">Proces-Verbaal van Aangifte</h2>
+            <h2 style="color:var(--police); margin:0 0 10px 0;">Q2les 2 Aangifte</h2>
             <p style="font-size: 0.8em; color: #666; margin-bottom: 10px;">Slachtoffer: E. de Vries</p>
             
             <textarea id="pvInput" placeholder="Stel hier de officiële aangifte op in de ik-vorm..." oninput="checkPV()"></textarea>
@@ -94,15 +94,15 @@
     let stress = 15;
 
     const responses = {
-        hallo: ["Ik kom aangifte doen... mijn witte Gazelle is weg. Het slot ligt kapot op de grond.", "Goedemorgen. Er is een fiets gestolen bij mijn huis.", "Hallo. Ik wil graag een diefstal melden."],
-        naam: ["Mijn volledige naam is Evi de Vries.", "Ik ben Evi de Vries.", "Gewoon Evi de Vries."],
-        datum: ["Ik ben geboren op 4 november 2002.", "Dat is 4 november 2002.", "Mijn geboortedatum is 04-11-2002."],
+        hallo: ["Ik kom aangifte doen... mijn witte Gazelle is weg. Het slot ligt kapot op de grond.", "Heeft u tijd? Mijn fiets is gestolen bij mijn woning aan het Vredenburg.", "Goedendag. Ik ben nogal overstuur, mijn fiets is vannacht meegenomen."],
+        naam: ["Mijn naam is Evi de Vries.", "Ik ben Evi de Vries.", "Evi de Vries is de naam."],
+        datum: ["Ik ben geboren op 4 november 2002.", "4 november 2002 is mijn geboortedatum.", "Mijn geboortedatum is 04-11-2002."],
         adres: ["Ik woon aan het Vredenburg 24-B in Utrecht.", "Dat is aan het Vredenburg, nummer 24-B.", "Mijn adres is Vredenburg 24-B."],
         slot: ["Mijn ringslot ligt nu kapot op de straat.", "Ze hebben de ABUS-ketting gewoon doorgeknipt.", "Hij stond op slot met een ringslot en een dikke ketting, maar die zijn vernield."],
         waarde: ["De fiets heeft 649 euro gekost.", "De waarde is 649 euro.", "Ik heb de bon nog, hij was 649 euro."],
         tijd: ["Het gebeurde vannacht om 03:15 uur.", "Rond 03:15 uur schrok ik wakker van lawaai.", "Ik zag op de wekker dat het 03:15 uur was."],
         kenmerken: ["Het is een witte Gazelle Esprit.", "Hij heeft een zwart rekje voorop en een madelief-sticker op de stang.", "Het model is een Gazelle Esprit, kleur wit."],
-        toestemming: ["Nee, natuurlijk heb ik geen toestemming gegeven!", "Meent u dat nou? Ik heb niemand recht gegeven om mijn fiets mee te nemen!", "Absoluut niet, het is diefstal."],
+        toestemming: ["Nee, natuurlijk heb ik geen toestemming gegeven!", "Meent u dat nu? Ik heb niemand recht gegeven om mijn fiets mee te nemen!", "Absoluut niet, het is diefstal."],
         verward: ["Dat begrijp ik niet helemaal...", "Kunt u de vraag anders stellen?", "Ik weet het even niet meer, ik ben nogal geschrokken."]
     };
 
@@ -204,7 +204,7 @@
         const element = document.getElementById('pdf-content');
         const opt = {
             margin: 10,
-            filename: 'PV_Aangifte_Evi.pdf',
+            filename: 'Q2les2_Aangifte_Evi.pdf',
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 2 },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
